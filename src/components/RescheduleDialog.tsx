@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { TravelEvent } from '@/types/travel';
+import { DailyEvent } from '@/types/daily';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,11 +10,9 @@ import { format, isSameDay, parse } from 'date-fns';
 interface RescheduleDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  event: TravelEvent;
+  event: DailyEvent;
   onReschedule: (eventId: string, newDate: Date, newStartTime: string, newEndTime: string) => void;
-  allEvents: TravelEvent[];
-  tripStartDate: Date;
-  tripEndDate: Date;
+  allEvents: DailyEvent[];
 }
 
 export const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
@@ -23,13 +21,11 @@ export const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
   event,
   onReschedule,
   allEvents,
-  tripStartDate,
-  tripEndDate,
 }) => {
   const [newDate, setNewDate] = useState(format(event.date, 'yyyy-MM-dd'));
   const [newStartTime, setNewStartTime] = useState(event.startTime);
   const [newEndTime, setNewEndTime] = useState(event.endTime);
-  const [conflicts, setConflicts] = useState<TravelEvent[]>([]);
+  const [conflicts, setConflicts] = useState<DailyEvent[]>([]);
 
   const checkConflicts = (date: string, startTime: string, endTime: string) => {
     const selectedDate = new Date(date);
@@ -69,7 +65,7 @@ export const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
   };
 
   const handleReschedule = () => {
-    if (new Date(newStartTime) >= new Date(newEndTime)) {
+    if (new Date(`1970-01-01T${newStartTime}`) >= new Date(`1970-01-01T${newEndTime}`)) {
       alert('End time must be after start time');
       return;
     }
@@ -109,8 +105,6 @@ export const RescheduleDialog: React.FC<RescheduleDialogProps> = ({
                 type="date"
                 value={newDate}
                 onChange={(e) => handleDateTimeChange('date', e.target.value)}
-                min={format(tripStartDate, 'yyyy-MM-dd')}
-                max={format(tripEndDate, 'yyyy-MM-dd')}
                 required
               />
             </div>

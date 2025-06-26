@@ -20,7 +20,7 @@ export const PrintView: React.FC<PrintViewProps> = ({ date, events, onClose }) =
 
   return (
     <div className="fixed inset-0 bg-white z-50 overflow-auto">
-      <div className="max-w-4xl mx-auto p-8">
+      <div className="max-w-4xl mx-auto p-8 print-container">
         {/* Print header - hidden on screen, visible when printing */}
         <div className="print:block hidden mb-8">
           <h1 className="text-3xl font-bold text-center mb-2">India Trip Schedule</h1>
@@ -115,24 +115,6 @@ export const PrintView: React.FC<PrintViewProps> = ({ date, events, onClose }) =
           <p>Generated from India Trip Calendar - {format(new Date(), 'MMMM dd, yyyy')}</p>
         </div>
       </div>
-
-      {/* Print styles */}
-      <style jsx>{`
-        @media print {
-          body * {
-            visibility: hidden;
-          }
-          .print-container, .print-container * {
-            visibility: visible;
-          }
-          .print-container {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-          }
-        }
-      `}</style>
     </div>
   );
 };

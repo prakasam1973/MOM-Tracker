@@ -4,6 +4,7 @@ import { TravelEvent } from '@/types/travel';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { X } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -31,6 +32,7 @@ export const EventForm: React.FC<EventFormProps> = ({
     location: '',
     category: 'activity' as TravelEvent['category'],
     priority: 'medium' as TravelEvent['priority'],
+    notes: '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -39,6 +41,7 @@ export const EventForm: React.FC<EventFormProps> = ({
     const eventData: Omit<TravelEvent, 'id'> = {
       ...formData,
       date: new Date(formData.date),
+      status: 'scheduled',
     };
     
     onSubmit(eventData);
@@ -159,6 +162,18 @@ export const EventForm: React.FC<EventFormProps> = ({
               <option value="medium">Medium</option>
               <option value="high">High</option>
             </select>
+          </div>
+
+          <div>
+            <Label htmlFor="notes">Notes (Optional)</Label>
+            <Textarea
+              id="notes"
+              value={formData.notes}
+              onChange={(e) => handleChange('notes', e.target.value)}
+              placeholder="Add any notes about this event..."
+              rows={3}
+              className="resize-none"
+            />
           </div>
 
           <div className="flex gap-3 pt-4">

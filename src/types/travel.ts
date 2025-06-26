@@ -9,6 +9,9 @@ export interface TravelEvent {
   location: string;
   category: 'flight' | 'hotel' | 'activity' | 'meeting' | 'meal' | 'transport' | 'other';
   priority: 'low' | 'medium' | 'high';
+  notes: string;
+  status: 'scheduled' | 'completed' | 'cancelled' | 'rescheduled';
+  originalEventId?: string; // For tracking rescheduled events
 }
 
 export interface SlackMessage {

@@ -10,6 +10,8 @@ interface CalendarGridProps {
   events: TravelEvent[];
   onDateSelect: (date: Date) => void;
   onDeleteEvent: (eventId: string) => void;
+  onUpdateEvent: (event: TravelEvent) => void;
+  onRescheduleEvent: (eventId: string, newDate: Date, newStartTime: string, newEndTime: string) => void;
 }
 
 export const CalendarGrid: React.FC<CalendarGridProps> = ({
@@ -18,6 +20,8 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   events,
   onDateSelect,
   onDeleteEvent,
+  onUpdateEvent,
+  onRescheduleEvent,
 }) => {
   const getDaysInTrip = () => {
     const days = [];
@@ -32,7 +36,8 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   };
 
   const getEventsForDate = (date: Date) => {
-    return events.filter(event => isSameDay(event.date, date));
+    return events.filter(event => isSameDay(event.date, date))
+      .sort((a, b) => a.startTime.localeCompare(b.startTime));
   };
 
   const days = getDaysInTrip();
@@ -68,6 +73,11 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                       key={event.id}
                       event={event}
                       onDelete={onDeleteEvent}
+                      onUpdate={onUpdateEvent}
+                      onReschedule={onRescheduleEvent}
+                      allEvents={events}
+                      tripStartDate={tripStartDate}
+                      tripEndDate={tripEndDate}
                     />
                   ))
                 ) : (

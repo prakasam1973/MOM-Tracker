@@ -33,6 +33,43 @@ const Index = () => {
     });
   };
 
+  const handleUpdateEvent = (updatedEvent: TravelEvent) => {
+    setEvents(prev => prev.map(event => 
+      event.id === updatedEvent.id ? updatedEvent : event
+    ));
+    toast({
+      title: "Event Updated",
+      description: `${updatedEvent.title} has been updated.`,
+    });
+  };
+
+  const handleRescheduleEvent = (eventId: string, newDate: Date, newStartTime: string, newEndTime: string) => {
+    setEvents(prev => prev.map(event => {
+      if (event.id === eventId) {
+        // Mark original as rescheduled and create new event
+        const rescheduledEvent = {
+          ...event,
+          date: newDate,
+          startTime: newStartTime,
+          endTime: newEndTime,
+          status: 'scheduled' as const,
+          originalEventId: event.originalEventId || event.id,
+        };
+        
+        // Mark the old event as rescheduled
+        const oldEvent = { ...event, status: 'rescheduled' as const };
+        
+        return rescheduledEvent;
+      }
+      return event;
+    }));
+    
+    toast({
+      title: "Event Rescheduled",
+      description: "Event has been moved to the new date and time.",
+    });
+  };
+
   const handleDeleteEvent = (eventId: string) => {
     setEvents(prev => prev.filter(event => event.id !== eventId));
     toast({
@@ -44,6 +81,14 @@ const Index = () => {
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
     setShowEventForm(true);
+  };
+
+  // Get event statistics
+  const eventStats = {
+    total: events.length,
+    scheduled: events.filter(e => e.status === 'scheduled').length,
+    completed: events.filter(e => e.status === 'completed').length,
+    cancelled: events.filter(e => e.status === 'cancelled').length,
   };
 
   return (
@@ -80,6 +125,8 @@ const Index = () => {
               events={events}
               onDateSelect={handleDateSelect}
               onDeleteEvent={handleDeleteEvent}
+              onUpdateEvent={handleUpdateEvent}
+              onRescheduleEvent={handleRescheduleEvent}
             />
           </div>
           
@@ -89,7 +136,25 @@ const Index = () => {
               <div className="space-y-2 text-sm text-gray-600">
                 <p><strong>Destination:</strong> India</p>
                 <p><strong>Duration:</strong> 8 days</p>
-                <p><strong>Total Events:</strong> {events.length}</p>
+                <p><strong>Total Events:</strong> {eventStats.total}</p>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Event Status</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-blue-600">Scheduled:</span>
+                  <span className="font-medium">{eventStats.scheduled}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-green-600">Completed:</span>
+                  <span className="font-medium">{eventStats.completed}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-red-600">Cancelled:</span>
+                  <span className="font-medium">{eventStats.cancelled}</span>
+                </div>
               </div>
             </div>
           </div>

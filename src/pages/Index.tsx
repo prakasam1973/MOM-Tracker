@@ -4,24 +4,27 @@ import { CalendarHeader } from '@/components/CalendarHeader';
 import { CalendarGrid } from '@/components/CalendarGrid';
 import { EventForm } from '@/components/EventForm';
 import { SlackIntegration } from '@/components/SlackIntegration';
-import { TravelEvent } from '@/types/travel';
+import { DailyEvent } from '@/types/daily';
 import { Button } from '@/components/ui/button';
 import { Plus, MessageSquare } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
-  const [events, setEvents] = useState<TravelEvent[]>([]);
+  const [events, setEvents] = useState<DailyEvent[]>([]);
   const [showEventForm, setShowEventForm] = useState(false);
   const [showSlackPanel, setShowSlackPanel] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const { toast } = useToast();
 
-  // Trip dates: July 3rd to July 10th, 2024
-  const tripStartDate = new Date(2024, 6, 3); // Month is 0-indexed
-  const tripEndDate = new Date(2024, 6, 10);
+  // Current week dates for initial view
+  const today = new Date();
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - today.getDay());
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
 
-  const handleAddEvent = (eventData: Omit<TravelEvent, 'id'>) => {
-    const newEvent: TravelEvent = {
+  const handleAddEvent = (eventData: Omit<DailyEvent, 'id'>) => {
+    const newEvent: DailyEvent = {
       ...eventData,
       id: Date.now().toString(),
     };
@@ -29,11 +32,11 @@ const Index = () => {
     setShowEventForm(false);
     toast({
       title: "Event Added",
-      description: `${eventData.title} has been added to your India trip schedule.`,
+      description: `${eventData.title} has been added to your schedule.`,
     });
   };
 
-  const handleUpdateEvent = (updatedEvent: TravelEvent) => {
+  const handleUpdateEvent = (updatedEvent: DailyEvent) => {
     setEvents(prev => prev.map(event => 
       event.id === updatedEvent.id ? updatedEvent : event
     ));
@@ -46,7 +49,6 @@ const Index = () => {
   const handleRescheduleEvent = (eventId: string, newDate: Date, newStartTime: string, newEndTime: string) => {
     setEvents(prev => prev.map(event => {
       if (event.id === eventId) {
-        // Mark original as rescheduled and create new event
         const rescheduledEvent = {
           ...event,
           date: newDate,
@@ -55,9 +57,6 @@ const Index = () => {
           status: 'scheduled' as const,
           originalEventId: event.originalEventId || event.id,
         };
-        
-        // Mark the old event as rescheduled
-        const oldEvent = { ...event, status: 'rescheduled' as const };
         
         return rescheduledEvent;
       }
@@ -85,24 +84,27 @@ const Index = () => {
 
   // Get event statistics
   const eventStats = {
-    total: events.length,
+    today: events.filter(e => {
+      const eventDate = new Date(e.date);
+      return eventDate.toDateString() === today.toDateString();
+    }).length,
+    thisWeek: events.filter(e => {
+      const eventDate = new Date(e.date);
+      return eventDate >= startOfWeek && eventDate <= endOfWeek;
+    }).length,
     scheduled: events.filter(e => e.status === 'scheduled').length,
     completed: events.filter(e => e.status === 'completed').length,
-    cancelled: events.filter(e => e.status === 'cancelled').length,
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
       <div className="container mx-auto p-6">
-        <CalendarHeader 
-          tripStartDate={tripStartDate}
-          tripEndDate={tripEndDate}
-        />
+        <CalendarHeader />
         
         <div className="mb-6 flex gap-4">
           <Button 
             onClick={() => setShowEventForm(true)}
-            className="bg-orange-600 hover:bg-orange-700"
+            className="bg-blue-600 hover:bg-blue-700"
           >
             <Plus className="w-4 h-4 mr-2" />
             Add Event
@@ -110,7 +112,7 @@ const Index = () => {
           <Button 
             onClick={() => setShowSlackPanel(true)}
             variant="outline"
-            className="border-orange-300 text-orange-700 hover:bg-orange-100"
+            className="border-blue-300 text-blue-700 hover:bg-blue-100"
           >
             <MessageSquare className="w-4 h-4 mr-2" />
             Slack Integration
@@ -120,8 +122,6 @@ const Index = () => {
         <div className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <CalendarGrid
-              tripStartDate={tripStartDate}
-              tripEndDate={tripEndDate}
               events={events}
               onDateSelect={handleDateSelect}
               onDeleteEvent={handleDeleteEvent}
@@ -132,29 +132,39 @@ const Index = () => {
           
           <div className="space-y-4">
             <div className="bg-white rounded-lg shadow-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Trip Overview</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Stats</h3>
               <div className="space-y-2 text-sm text-gray-600">
-                <p><strong>Destination:</strong> India</p>
-                <p><strong>Duration:</strong> 8 days</p>
-                <p><strong>Total Events:</strong> {eventStats.total}</p>
+                <div className="flex justify-between">
+                  <span>Today's Events:</span>
+                  <span className="font-medium text-blue-600">{eventStats.today}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>This Week:</span>
+                  <span className="font-medium text-blue-600">{eventStats.thisWeek}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Scheduled:</span>
+                  <span className="font-medium text-orange-600">{eventStats.scheduled}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Completed:</span>
+                  <span className="font-medium text-green-600">{eventStats.completed}</span>
+                </div>
               </div>
             </div>
 
             <div className="bg-white rounded-lg shadow-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Event Status</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Categories</h3>
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-blue-600">Scheduled:</span>
-                  <span className="font-medium">{eventStats.scheduled}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-green-600">Completed:</span>
-                  <span className="font-medium">{eventStats.completed}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-red-600">Cancelled:</span>
-                  <span className="font-medium">{eventStats.cancelled}</span>
-                </div>
+                {['work', 'personal', 'health', 'meeting', 'appointment', 'social'].map(category => {
+                  const count = events.filter(e => e.category === category).length;
+                  return (
+                    <div key={category} className="flex justify-between">
+                      <span className="capitalize text-gray-600">{category}:</span>
+                      <span className="font-medium">{count}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -165,8 +175,6 @@ const Index = () => {
             onSubmit={handleAddEvent}
             onClose={() => setShowEventForm(false)}
             selectedDate={selectedDate}
-            tripStartDate={tripStartDate}
-            tripEndDate={tripEndDate}
           />
         )}
 

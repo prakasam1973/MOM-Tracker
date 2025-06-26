@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { TravelEvent } from '@/types/travel';
+import { DailyEvent } from '@/types/daily';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -9,7 +9,7 @@ import { X, FileText } from 'lucide-react';
 interface EventNotesProps {
   isOpen: boolean;
   onClose: () => void;
-  event: TravelEvent;
+  event: DailyEvent;
   onUpdateNotes: (notes: string) => void;
 }
 

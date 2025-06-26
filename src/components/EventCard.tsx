@@ -1,29 +1,27 @@
 
 import React, { useState } from 'react';
-import { TravelEvent } from '@/types/travel';
-import { Clock, MapPin, Trash2, Edit, FileText, Calendar, Check, X, RotateCcw } from 'lucide-react';
+import { DailyEvent } from '@/types/daily';
+import { Clock, MapPin, Trash2, FileText, Calendar, Check, X, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { EventNotes } from '@/components/EventNotes';
 import { RescheduleDialog } from '@/components/RescheduleDialog';
 
 interface EventCardProps {
-  event: TravelEvent;
+  event: DailyEvent;
   onDelete: (eventId: string) => void;
-  onUpdate: (event: TravelEvent) => void;
+  onUpdate: (event: DailyEvent) => void;
   onReschedule: (eventId: string, newDate: Date, newStartTime: string, newEndTime: string) => void;
-  allEvents: TravelEvent[];
-  tripStartDate: Date;
-  tripEndDate: Date;
+  allEvents: DailyEvent[];
 }
 
 const categoryColors = {
-  flight: 'bg-blue-100 text-blue-800 border-blue-200',
-  hotel: 'bg-green-100 text-green-800 border-green-200',
-  activity: 'bg-purple-100 text-purple-800 border-purple-200',
+  work: 'bg-blue-100 text-blue-800 border-blue-200',
+  personal: 'bg-green-100 text-green-800 border-green-200',
+  health: 'bg-purple-100 text-purple-800 border-purple-200',
   meeting: 'bg-red-100 text-red-800 border-red-200',
-  meal: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  transport: 'bg-gray-100 text-gray-800 border-gray-200',
-  other: 'bg-orange-100 text-orange-800 border-orange-200',
+  appointment: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  social: 'bg-pink-100 text-pink-800 border-pink-200',
+  other: 'bg-gray-100 text-gray-800 border-gray-200',
 };
 
 const priorityColors = {
@@ -51,16 +49,14 @@ export const EventCard: React.FC<EventCardProps> = ({
   onDelete, 
   onUpdate, 
   onReschedule, 
-  allEvents, 
-  tripStartDate, 
-  tripEndDate 
+  allEvents
 }) => {
   const [showNotes, setShowNotes] = useState(false);
   const [showReschedule, setShowReschedule] = useState(false);
   
   const StatusIcon = statusIcons[event.status];
 
-  const handleStatusChange = (newStatus: TravelEvent['status']) => {
+  const handleStatusChange = (newStatus: DailyEvent['status']) => {
     onUpdate({ ...event, status: newStatus });
   };
 
@@ -93,10 +89,12 @@ export const EventCard: React.FC<EventCardProps> = ({
                 <Clock className="w-3 h-3" />
                 <span>{event.startTime} - {event.endTime}</span>
               </div>
-              <div className="flex items-center gap-1">
-                <MapPin className="w-3 h-3" />
-                <span>{event.location}</span>
-              </div>
+              {event.location && (
+                <div className="flex items-center gap-1">
+                  <MapPin className="w-3 h-3" />
+                  <span>{event.location}</span>
+                </div>
+              )}
             </div>
 
             {event.notes && (
@@ -188,8 +186,6 @@ export const EventCard: React.FC<EventCardProps> = ({
         event={event}
         onReschedule={onReschedule}
         allEvents={allEvents}
-        tripStartDate={tripStartDate}
-        tripEndDate={tripEndDate}
       />
     </>
   );

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { TravelEvent } from '@/types/travel';
+import { DailyEvent } from '@/types/daily';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,36 +9,32 @@ import { X } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface EventFormProps {
-  onSubmit: (event: Omit<TravelEvent, 'id'>) => void;
+  onSubmit: (event: Omit<DailyEvent, 'id'>) => void;
   onClose: () => void;
   selectedDate: Date | null;
-  tripStartDate: Date;
-  tripEndDate: Date;
 }
 
 export const EventForm: React.FC<EventFormProps> = ({
   onSubmit,
   onClose,
   selectedDate,
-  tripStartDate,
-  tripEndDate,
 }) => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    date: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : format(tripStartDate, 'yyyy-MM-dd'),
+    date: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
     startTime: '09:00',
     endTime: '10:00',
     location: '',
-    category: 'activity' as TravelEvent['category'],
-    priority: 'medium' as TravelEvent['priority'],
+    category: 'work' as DailyEvent['category'],
+    priority: 'medium' as DailyEvent['priority'],
     notes: '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const eventData: Omit<TravelEvent, 'id'> = {
+    const eventData: Omit<DailyEvent, 'id'> = {
       ...formData,
       date: new Date(formData.date),
       status: 'scheduled',
@@ -68,7 +64,7 @@ export const EventForm: React.FC<EventFormProps> = ({
               id="title"
               value={formData.title}
               onChange={(e) => handleChange('title', e.target.value)}
-              placeholder="e.g., Flight to Delhi"
+              placeholder="e.g., Team Meeting"
               required
             />
           </div>
@@ -90,8 +86,6 @@ export const EventForm: React.FC<EventFormProps> = ({
               type="date"
               value={formData.date}
               onChange={(e) => handleChange('date', e.target.value)}
-              min={format(tripStartDate, 'yyyy-MM-dd')}
-              max={format(tripEndDate, 'yyyy-MM-dd')}
               required
             />
           </div>
@@ -125,8 +119,7 @@ export const EventForm: React.FC<EventFormProps> = ({
               id="location"
               value={formData.location}
               onChange={(e) => handleChange('location', e.target.value)}
-              placeholder="e.g., Mumbai Airport"
-              required
+              placeholder="e.g., Conference Room A"
             />
           </div>
 
@@ -139,12 +132,12 @@ export const EventForm: React.FC<EventFormProps> = ({
               className="w-full p-2 border border-input rounded-md bg-background"
               required
             >
-              <option value="flight">Flight</option>
-              <option value="hotel">Hotel</option>
-              <option value="activity">Activity</option>
+              <option value="work">Work</option>
+              <option value="personal">Personal</option>
+              <option value="health">Health</option>
               <option value="meeting">Meeting</option>
-              <option value="meal">Meal</option>
-              <option value="transport">Transport</option>
+              <option value="appointment">Appointment</option>
+              <option value="social">Social</option>
               <option value="other">Other</option>
             </select>
           </div>
@@ -177,7 +170,7 @@ export const EventForm: React.FC<EventFormProps> = ({
           </div>
 
           <div className="flex gap-3 pt-4">
-            <Button type="submit" className="flex-1 bg-orange-600 hover:bg-orange-700">
+            <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700">
               Add Event
             </Button>
             <Button type="button" variant="outline" onClick={onClose}>

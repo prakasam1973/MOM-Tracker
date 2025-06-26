@@ -1,13 +1,13 @@
 
 import React from 'react';
 import { format } from 'date-fns';
-import { TravelEvent } from '@/types/travel';
+import { DailyEvent } from '@/types/daily';
 import { Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface PrintViewProps {
   date: Date;
-  events: TravelEvent[];
+  events: DailyEvent[];
   onClose: () => void;
 }
 
@@ -23,7 +23,7 @@ export const PrintView: React.FC<PrintViewProps> = ({ date, events, onClose }) =
       <div className="max-w-4xl mx-auto p-8 print-container">
         {/* Print header - hidden on screen, visible when printing */}
         <div className="print:block hidden mb-8">
-          <h1 className="text-3xl font-bold text-center mb-2">India Trip Schedule</h1>
+          <h1 className="text-3xl font-bold text-center mb-2">Daily Schedule</h1>
           <h2 className="text-xl text-center text-gray-600">
             {format(date, 'EEEE, MMMM dd, yyyy')}
           </h2>
@@ -60,7 +60,7 @@ export const PrintView: React.FC<PrintViewProps> = ({ date, events, onClose }) =
                     </h3>
                     <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
                       <span className="font-medium">{event.startTime} - {event.endTime}</span>
-                      <span>📍 {event.location}</span>
+                      {event.location && <span>📍 {event.location}</span>}
                       <span className="capitalize bg-gray-100 px-2 py-1 rounded">
                         {event.category}
                       </span>
@@ -112,7 +112,7 @@ export const PrintView: React.FC<PrintViewProps> = ({ date, events, onClose }) =
 
         {/* Print footer */}
         <div className="print:block hidden mt-8 pt-4 border-t text-center text-sm text-gray-500">
-          <p>Generated from India Trip Calendar - {format(new Date(), 'MMMM dd, yyyy')}</p>
+          <p>Generated from Daily Event Tracker - {format(new Date(), 'MMMM dd, yyyy')}</p>
         </div>
       </div>
     </div>

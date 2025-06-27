@@ -38,11 +38,14 @@ export const EventNotes: React.FC<EventNotesProps> = ({
     const afterText = notes.substring(end);
 
     let newText;
+    let cursorOffset = 0;
+    
     if (selectedText) {
       // If text is selected, add bullet to each line
       const lines = selectedText.split('\n');
       const bulletedLines = lines.map(line => line.trim() ? `• ${line}` : line);
       newText = beforeText + bulletedLines.join('\n') + afterText;
+      cursorOffset = newText.length - notes.length;
     } else {
       // If no selection, add bullet at cursor position
       const lineStart = beforeText.lastIndexOf('\n') + 1;
@@ -50,8 +53,10 @@ export const EventNotes: React.FC<EventNotesProps> = ({
       
       if (currentLine.trim() === '') {
         newText = beforeText + '• ' + afterText;
+        cursorOffset = 2;
       } else {
         newText = beforeText + '\n• ' + afterText;
+        cursorOffset = 3;
       }
     }
 
@@ -60,7 +65,7 @@ export const EventNotes: React.FC<EventNotesProps> = ({
     // Focus textarea and set cursor position
     setTimeout(() => {
       textarea.focus();
-      const newCursorPos = selectedText ? start + newText.length - notes.length : start + (currentLine.trim() === '' ? 2 : 3);
+      const newCursorPos = selectedText ? start + cursorOffset : start + cursorOffset;
       textarea.setSelectionRange(newCursorPos, newCursorPos);
     }, 0);
   };
@@ -76,6 +81,8 @@ export const EventNotes: React.FC<EventNotesProps> = ({
     const afterText = notes.substring(end);
 
     let newText;
+    let cursorOffset = 0;
+    
     if (selectedText) {
       // If text is selected, add numbers to each line
       const lines = selectedText.split('\n');
@@ -83,6 +90,7 @@ export const EventNotes: React.FC<EventNotesProps> = ({
         line.trim() ? `${index + 1}. ${line}` : line
       );
       newText = beforeText + numberedLines.join('\n') + afterText;
+      cursorOffset = newText.length - notes.length;
     } else {
       // If no selection, add number at cursor position
       const lineStart = beforeText.lastIndexOf('\n') + 1;
@@ -90,8 +98,10 @@ export const EventNotes: React.FC<EventNotesProps> = ({
       
       if (currentLine.trim() === '') {
         newText = beforeText + '1. ' + afterText;
+        cursorOffset = 3;
       } else {
         newText = beforeText + '\n1. ' + afterText;
+        cursorOffset = 4;
       }
     }
 
@@ -100,7 +110,7 @@ export const EventNotes: React.FC<EventNotesProps> = ({
     // Focus textarea and set cursor position
     setTimeout(() => {
       textarea.focus();
-      const newCursorPos = selectedText ? start + newText.length - notes.length : start + (currentLine.trim() === '' ? 3 : 4);
+      const newCursorPos = selectedText ? start + cursorOffset : start + cursorOffset;
       textarea.setSelectionRange(newCursorPos, newCursorPos);
     }, 0);
   };

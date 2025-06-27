@@ -20,14 +20,13 @@ export const EventForm: React.FC<EventFormProps> = ({
   selectedDate,
 }) => {
   const [formData, setFormData] = useState({
+    person: '',
     title: '',
     description: '',
     date: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
     startTime: '09:00',
     endTime: '10:00',
     location: '',
-    category: 'work' as DailyEvent['category'],
-    priority: 'medium' as DailyEvent['priority'],
     notes: '',
   });
 
@@ -58,6 +57,16 @@ export const EventForm: React.FC<EventFormProps> = ({
         </div>
         
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div>
+            <Label htmlFor="person">Person Name</Label>
+            <Input
+              id="person"
+              value={formData.person}
+              onChange={(e) => handleChange('person', e.target.value)}
+              placeholder="e.g., John Doe"
+            />
+          </div>
+
           <div>
             <Label htmlFor="title">Event Title</Label>
             <Input
@@ -121,40 +130,6 @@ export const EventForm: React.FC<EventFormProps> = ({
               onChange={(e) => handleChange('location', e.target.value)}
               placeholder="e.g., Conference Room A"
             />
-          </div>
-
-          <div>
-            <Label htmlFor="category">Category</Label>
-            <select
-              id="category"
-              value={formData.category}
-              onChange={(e) => handleChange('category', e.target.value)}
-              className="w-full p-2 border border-input rounded-md bg-background"
-              required
-            >
-              <option value="work">Work</option>
-              <option value="personal">Personal</option>
-              <option value="health">Health</option>
-              <option value="meeting">Meeting</option>
-              <option value="appointment">Appointment</option>
-              <option value="social">Social</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-
-          <div>
-            <Label htmlFor="priority">Priority</Label>
-            <select
-              id="priority"
-              value={formData.priority}
-              onChange={(e) => handleChange('priority', e.target.value)}
-              className="w-full p-2 border border-input rounded-md bg-background"
-              required
-            >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-            </select>
           </div>
 
           <div>

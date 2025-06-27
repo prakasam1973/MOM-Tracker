@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { CalendarHeader } from '@/components/CalendarHeader';
 import { CalendarGrid } from '@/components/CalendarGrid';

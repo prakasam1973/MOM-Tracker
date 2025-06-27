@@ -7,8 +7,7 @@ export interface DailyEvent {
   startTime: string;
   endTime: string;
   location: string;
-  category: 'work' | 'personal' | 'health' | 'meeting' | 'appointment' | 'social' | 'other';
-  priority: 'low' | 'medium' | 'high';
+  person: string;
   notes: string;
   status: 'scheduled' | 'completed' | 'cancelled' | 'rescheduled';
   originalEventId?: string;

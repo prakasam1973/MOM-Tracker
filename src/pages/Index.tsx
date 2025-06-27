@@ -1,20 +1,32 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CalendarHeader } from '@/components/CalendarHeader';
 import { CalendarGrid } from '@/components/CalendarGrid';
 import { EventForm } from '@/components/EventForm';
-import { SlackIntegration } from '@/components/SlackIntegration';
 import { DailyEvent } from '@/types/daily';
 import { Button } from '@/components/ui/button';
-import { Plus, MessageSquare } from 'lucide-react';
+import { Plus, Database, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { saveEvents, loadEvents, clearEvents } from '@/utils/storage';
 
 const Index = () => {
   const [events, setEvents] = useState<DailyEvent[]>([]);
   const [showEventForm, setShowEventForm] = useState(false);
-  const [showSlackPanel, setShowSlackPanel] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const { toast } = useToast();
+
+  // Load events from localStorage on component mount
+  useEffect(() => {
+    const loadedEvents = loadEvents();
+    setEvents(loadedEvents);
+  }, []);
+
+  // Save events to localStorage whenever events change
+  useEffect(() => {
+    if (events.length > 0) {
+      saveEvents(events);
+    }
+  }, [events]);
 
   // Current week dates for initial view
   const today = new Date();
@@ -28,7 +40,11 @@ const Index = () => {
       ...eventData,
       id: Date.now().toString(),
     };
-    setEvents(prev => [...prev, newEvent]);
+    setEvents(prev => {
+      const updated = [...prev, newEvent];
+      saveEvents(updated);
+      return updated;
+    });
     setShowEventForm(false);
     toast({
       title: "Event Added",
@@ -37,9 +53,13 @@ const Index = () => {
   };
 
   const handleUpdateEvent = (updatedEvent: DailyEvent) => {
-    setEvents(prev => prev.map(event => 
-      event.id === updatedEvent.id ? updatedEvent : event
-    ));
+    setEvents(prev => {
+      const updated = prev.map(event => 
+        event.id === updatedEvent.id ? updatedEvent : event
+      );
+      saveEvents(updated);
+      return updated;
+    });
     toast({
       title: "Event Updated",
       description: `${updatedEvent.title} has been updated.`,
@@ -47,21 +67,25 @@ const Index = () => {
   };
 
   const handleRescheduleEvent = (eventId: string, newDate: Date, newStartTime: string, newEndTime: string) => {
-    setEvents(prev => prev.map(event => {
-      if (event.id === eventId) {
-        const rescheduledEvent = {
-          ...event,
-          date: newDate,
-          startTime: newStartTime,
-          endTime: newEndTime,
-          status: 'scheduled' as const,
-          originalEventId: event.originalEventId || event.id,
-        };
-        
-        return rescheduledEvent;
-      }
-      return event;
-    }));
+    setEvents(prev => {
+      const updated = prev.map(event => {
+        if (event.id === eventId) {
+          const rescheduledEvent = {
+            ...event,
+            date: newDate,
+            startTime: newStartTime,
+            endTime: newEndTime,
+            status: 'scheduled' as const,
+            originalEventId: event.originalEventId || event.id,
+          };
+          
+          return rescheduledEvent;
+        }
+        return event;
+      });
+      saveEvents(updated);
+      return updated;
+    });
     
     toast({
       title: "Event Rescheduled",
@@ -70,7 +94,11 @@ const Index = () => {
   };
 
   const handleDeleteEvent = (eventId: string) => {
-    setEvents(prev => prev.filter(event => event.id !== eventId));
+    setEvents(prev => {
+      const updated = prev.filter(event => event.id !== eventId);
+      saveEvents(updated);
+      return updated;
+    });
     toast({
       title: "Event Deleted",
       description: "Event has been removed from your schedule.",
@@ -80,6 +108,17 @@ const Index = () => {
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
     setShowEventForm(true);
+  };
+
+  const handleClearAllData = () => {
+    if (window.confirm('Are you sure you want to delete all events? This cannot be undone.')) {
+      setEvents([]);
+      clearEvents();
+      toast({
+        title: "All Data Cleared",
+        description: "All events have been deleted from your schedule.",
+      });
+    }
   };
 
   // Get event statistics
@@ -110,12 +149,12 @@ const Index = () => {
             Add Event
           </Button>
           <Button 
-            onClick={() => setShowSlackPanel(true)}
+            onClick={handleClearAllData}
             variant="outline"
-            className="border-blue-300 text-blue-700 hover:bg-blue-100"
+            className="border-red-300 text-red-700 hover:bg-red-100"
           >
-            <MessageSquare className="w-4 h-4 mr-2" />
-            Slack Integration
+            <Trash2 className="w-4 h-4 mr-2" />
+            Clear All Data
           </Button>
         </div>
 
@@ -131,6 +170,19 @@ const Index = () => {
           </div>
           
           <div className="space-y-4">
+            <div className="bg-white rounded-lg shadow-lg p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Database className="w-5 h-5 text-blue-600" />
+                <h3 className="text-lg font-semibold text-gray-800">Local Storage</h3>
+              </div>
+              <p className="text-sm text-gray-600 mb-4">
+                Your events are automatically saved to your browser's local storage.
+              </p>
+              <div className="text-xs text-gray-500">
+                Total Events: <span className="font-medium">{events.length}</span>
+              </div>
+            </div>
+
             <div className="bg-white rounded-lg shadow-lg p-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Stats</h3>
               <div className="space-y-2 text-sm text-gray-600">
@@ -156,7 +208,7 @@ const Index = () => {
             <div className="bg-white rounded-lg shadow-lg p-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Categories</h3>
               <div className="space-y-2 text-sm">
-                {['work', 'personal', 'health', 'meeting', 'appointment', 'social'].map(category => {
+                {(['work', 'personal', 'health', 'meeting', 'appointment', 'social'] as const).map(category => {
                   const count = events.filter(e => e.category === category).length;
                   return (
                     <div key={category} className="flex justify-between">
@@ -175,13 +227,6 @@ const Index = () => {
             onSubmit={handleAddEvent}
             onClose={() => setShowEventForm(false)}
             selectedDate={selectedDate}
-          />
-        )}
-
-        {showSlackPanel && (
-          <SlackIntegration
-            events={events}
-            onClose={() => setShowSlackPanel(false)}
           />
         )}
       </div>

@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { TravelEvent, SlackConfig } from '@/types/travel';
+import { DailyEvent, SlackConfig } from '@/types/daily';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,15 +8,15 @@ import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 
 interface SlackIntegrationProps {
-  events: TravelEvent[];
+  events: DailyEvent[];
   onClose: () => void;
 }
 
 export const SlackIntegration: React.FC<SlackIntegrationProps> = ({ events, onClose }) => {
   const [slackConfig, setSlackConfig] = useState<SlackConfig>({
     webhookUrl: '',
-    channel: '#travel',
-    username: 'Travel Bot',
+    channel: '#daily',
+    username: 'Daily Bot',
   });
   const [isConfigured, setIsConfigured] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -35,14 +34,14 @@ export const SlackIntegration: React.FC<SlackIntegrationProps> = ({ events, onCl
   };
 
   const generateItineraryMessage = () => {
-    let message = `🇮🇳 *India Travel Itinerary* 🇮🇳\n\n`;
+    let message = `📅 *Daily Schedule* 📅\n\n`;
     
     const eventsByDate = events.reduce((acc, event) => {
       const dateKey = format(event.date, 'yyyy-MM-dd');
       if (!acc[dateKey]) acc[dateKey] = [];
       acc[dateKey].push(event);
       return acc;
-    }, {} as Record<string, TravelEvent[]>);
+    }, {} as Record<string, DailyEvent[]>);
 
     Object.entries(eventsByDate)
       .sort(([a], [b]) => a.localeCompare(b))
@@ -65,14 +64,14 @@ export const SlackIntegration: React.FC<SlackIntegrationProps> = ({ events, onCl
     return message;
   };
 
-  const getEventEmoji = (category: TravelEvent['category']) => {
+  const getEventEmoji = (category: DailyEvent['category']) => {
     const emojis = {
-      flight: '✈️',
-      hotel: '🏨',
-      activity: '🎯',
+      work: '💼',
+      personal: '🏠',
+      health: '🏥',
       meeting: '🤝',
-      meal: '🍽️',
-      transport: '🚗',
+      appointment: '📋',
+      social: '🎉',
       other: '📌',
     };
     return emojis[category];
@@ -102,14 +101,14 @@ export const SlackIntegration: React.FC<SlackIntegrationProps> = ({ events, onCl
           text: message,
           channel: slackConfig.channel,
           username: slackConfig.username,
-          icon_emoji: ':airplane:',
+          icon_emoji: ':calendar:',
         }),
       });
 
       if (response.ok) {
         toast({
           title: "Sent to Slack!",
-          description: `Your itinerary has been shared to ${slackConfig.channel}.`,
+          description: `Your schedule has been shared to ${slackConfig.channel}.`,
         });
       } else {
         throw new Error('Failed to send message');
@@ -166,7 +165,7 @@ export const SlackIntegration: React.FC<SlackIntegrationProps> = ({ events, onCl
                   id="channel"
                   value={slackConfig.channel}
                   onChange={(e) => setSlackConfig(prev => ({ ...prev, channel: e.target.value }))}
-                  placeholder="#travel"
+                  placeholder="#daily"
                 />
               </div>
 
@@ -176,7 +175,7 @@ export const SlackIntegration: React.FC<SlackIntegrationProps> = ({ events, onCl
                   id="username"
                   value={slackConfig.username}
                   onChange={(e) => setSlackConfig(prev => ({ ...prev, username: e.target.value }))}
-                  placeholder="Travel Bot"
+                  placeholder="Daily Bot"
                 />
               </div>
 
@@ -215,7 +214,7 @@ export const SlackIntegration: React.FC<SlackIntegrationProps> = ({ events, onCl
                 className="w-full bg-green-600 hover:bg-green-700"
               >
                 <Send className="w-4 h-4 mr-2" />
-                {isSending ? 'Sending...' : 'Send Itinerary to Slack'}
+                {isSending ? 'Sending...' : 'Send Schedule to Slack'}
               </Button>
 
               {events.length === 0 && (

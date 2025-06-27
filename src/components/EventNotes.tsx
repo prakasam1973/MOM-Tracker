@@ -1,10 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { DailyEvent } from '@/types/daily';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { X, FileText } from 'lucide-react';
+import { X, FileText, List, ListOrdered } from 'lucide-react';
 
 interface EventNotesProps {
   isOpen: boolean;
@@ -20,10 +20,89 @@ export const EventNotes: React.FC<EventNotesProps> = ({
   onUpdateNotes,
 }) => {
   const [notes, setNotes] = useState(event.notes || '');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSave = () => {
     onUpdateNotes(notes);
     onClose();
+  };
+
+  const insertBulletPoint = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = notes.substring(start, end);
+    const beforeText = notes.substring(0, start);
+    const afterText = notes.substring(end);
+
+    let newText;
+    if (selectedText) {
+      // If text is selected, add bullet to each line
+      const lines = selectedText.split('\n');
+      const bulletedLines = lines.map(line => line.trim() ? `• ${line}` : line);
+      newText = beforeText + bulletedLines.join('\n') + afterText;
+    } else {
+      // If no selection, add bullet at cursor position
+      const lineStart = beforeText.lastIndexOf('\n') + 1;
+      const currentLine = beforeText.substring(lineStart);
+      
+      if (currentLine.trim() === '') {
+        newText = beforeText + '• ' + afterText;
+      } else {
+        newText = beforeText + '\n• ' + afterText;
+      }
+    }
+
+    setNotes(newText);
+    
+    // Focus textarea and set cursor position
+    setTimeout(() => {
+      textarea.focus();
+      const newCursorPos = selectedText ? start + newText.length - notes.length : start + (currentLine.trim() === '' ? 2 : 3);
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+  };
+
+  const insertNumberedList = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = notes.substring(start, end);
+    const beforeText = notes.substring(0, start);
+    const afterText = notes.substring(end);
+
+    let newText;
+    if (selectedText) {
+      // If text is selected, add numbers to each line
+      const lines = selectedText.split('\n');
+      const numberedLines = lines.map((line, index) => 
+        line.trim() ? `${index + 1}. ${line}` : line
+      );
+      newText = beforeText + numberedLines.join('\n') + afterText;
+    } else {
+      // If no selection, add number at cursor position
+      const lineStart = beforeText.lastIndexOf('\n') + 1;
+      const currentLine = beforeText.substring(lineStart);
+      
+      if (currentLine.trim() === '') {
+        newText = beforeText + '1. ' + afterText;
+      } else {
+        newText = beforeText + '\n1. ' + afterText;
+      }
+    }
+
+    setNotes(newText);
+    
+    // Focus textarea and set cursor position
+    setTimeout(() => {
+      textarea.focus();
+      const newCursorPos = selectedText ? start + newText.length - notes.length : start + (currentLine.trim() === '' ? 3 : 4);
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
   };
 
   if (!isOpen) return null;
@@ -49,7 +128,32 @@ export const EventNotes: React.FC<EventNotesProps> = ({
           
           <div className="space-y-3">
             <Label htmlFor="notes">Notes</Label>
+            
+            <div className="flex gap-2 mb-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={insertBulletPoint}
+                className="flex items-center gap-1 text-xs"
+              >
+                <List className="w-3 h-3" />
+                Bullets
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={insertNumberedList}
+                className="flex items-center gap-1 text-xs"
+              >
+                <ListOrdered className="w-3 h-3" />
+                Numbers
+              </Button>
+            </div>
+            
             <Textarea
+              ref={textareaRef}
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}

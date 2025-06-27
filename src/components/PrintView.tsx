@@ -53,30 +53,17 @@ export const PrintView: React.FC<PrintViewProps> = ({ date, events, onClose }) =
           {sortedEvents.length > 0 ? (
             sortedEvents.map((event, index) => (
               <div key={event.id} className="border-b border-gray-200 pb-6 last:border-b-0">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-gray-800 mb-1">
-                      {index + 1}. {event.title}
-                    </h3>
-                    <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
-                      <span className="font-medium">{event.startTime} - {event.endTime}</span>
-                      {event.location && <span>📍 {event.location}</span>}
-                      <span className="capitalize bg-gray-100 px-2 py-1 rounded">
-                        {event.category}
-                      </span>
-                      <span className="capitalize text-xs">
-                        Status: {event.status}
-                      </span>
+                <div className="mb-3">
+                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                    {index + 1}. {event.title}
+                  </h3>
+                  <div className="text-sm text-gray-600 mb-3">
+                    <div className="mb-1">
+                      <strong>Date:</strong> {format(event.date, 'EEEE, MMMM dd, yyyy')}
                     </div>
-                  </div>
-                  <div className="text-right text-sm text-gray-500">
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      event.priority === 'high' ? 'bg-red-100 text-red-800' :
-                      event.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {event.priority} priority
-                    </span>
+                    <div className="mb-1">
+                      <strong>Time:</strong> {event.startTime} - {event.endTime}
+                    </div>
                   </div>
                 </div>
 

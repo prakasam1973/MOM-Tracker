@@ -20,11 +20,61 @@ export const EventNotes: React.FC<EventNotesProps> = ({
   onUpdateNotes,
 }) => {
   const [notes, setNotes] = useState(event.notes || '');
+  const [currentListType, setCurrentListType] = useState<'bullet' | 'numbered' | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSave = () => {
     onUpdateNotes(notes);
     onClose();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && currentListType) {
+      e.preventDefault();
+      
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+
+      const start = textarea.selectionStart;
+      const beforeText = notes.substring(0, start);
+      const afterText = notes.substring(start);
+      
+      // Check if we're in a list item
+      const lines = beforeText.split('\n');
+      const currentLine = lines[lines.length - 1];
+      
+      let newText;
+      let cursorOffset = 0;
+      
+      if (currentListType === 'bullet' && currentLine.trim().startsWith('•')) {
+        // Continue bullet list
+        newText = beforeText + '\n• ' + afterText;
+        cursorOffset = 3;
+      } else if (currentListType === 'numbered' && /^\d+\./.test(currentLine.trim())) {
+        // Continue numbered list
+        const match = currentLine.trim().match(/^(\d+)\./);
+        if (match) {
+          const nextNumber = parseInt(match[1]) + 1;
+          newText = beforeText + `\n${nextNumber}. ` + afterText;
+          cursorOffset = `${nextNumber}. `.length + 1;
+        } else {
+          newText = beforeText + '\n' + afterText;
+          cursorOffset = 1;
+        }
+      } else {
+        // Regular enter
+        newText = beforeText + '\n' + afterText;
+        cursorOffset = 1;
+      }
+      
+      setNotes(newText);
+      
+      setTimeout(() => {
+        textarea.focus();
+        const newCursorPos = start + cursorOffset;
+        textarea.setSelectionRange(newCursorPos, newCursorPos);
+      }, 0);
+    }
   };
 
   const insertBulletPoint = () => {
@@ -61,6 +111,7 @@ export const EventNotes: React.FC<EventNotesProps> = ({
     }
 
     setNotes(newText);
+    setCurrentListType('bullet');
     
     // Focus textarea and set cursor position
     setTimeout(() => {
@@ -106,6 +157,7 @@ export const EventNotes: React.FC<EventNotesProps> = ({
     }
 
     setNotes(newText);
+    setCurrentListType('numbered');
     
     // Focus textarea and set cursor position
     setTimeout(() => {
@@ -113,6 +165,26 @@ export const EventNotes: React.FC<EventNotesProps> = ({
       const newCursorPos = selectedText ? start + cursorOffset : start + cursorOffset;
       textarea.setSelectionRange(newCursorPos, newCursorPos);
     }, 0);
+  };
+
+  const detectListType = (text: string, cursorPosition: number) => {
+    const beforeCursor = text.substring(0, cursorPosition);
+    const lines = beforeCursor.split('\n');
+    const currentLine = lines[lines.length - 1];
+    
+    if (currentLine.trim().startsWith('•')) {
+      setCurrentListType('bullet');
+    } else if (/^\d+\./.test(currentLine.trim())) {
+      setCurrentListType('numbered');
+    } else {
+      setCurrentListType(null);
+    }
+  };
+
+  const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    setNotes(newValue);
+    detectListType(newValue, e.target.selectionStart);
   };
 
   if (!isOpen) return null;
@@ -145,7 +217,9 @@ export const EventNotes: React.FC<EventNotesProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={insertBulletPoint}
-                className="flex items-center gap-1 text-xs"
+                className={`flex items-center gap-1 text-xs ${
+                  currentListType === 'bullet' ? 'bg-blue-50 border-blue-300' : ''
+                }`}
               >
                 <List className="w-3 h-3" />
                 Bullets
@@ -155,7 +229,9 @@ export const EventNotes: React.FC<EventNotesProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={insertNumberedList}
-                className="flex items-center gap-1 text-xs"
+                className={`flex items-center gap-1 text-xs ${
+                  currentListType === 'numbered' ? 'bg-blue-50 border-blue-300' : ''
+                }`}
               >
                 <ListOrdered className="w-3 h-3" />
                 Numbers
@@ -166,7 +242,8 @@ export const EventNotes: React.FC<EventNotesProps> = ({
               ref={textareaRef}
               id="notes"
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              onChange={handleNotesChange}
+              onKeyDown={handleKeyDown}
               placeholder="Add your notes about this event..."
               rows={6}
               className="resize-none"

@@ -25,12 +25,13 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   const [printDate, setPrintDate] = useState<Date | null>(null);
   const [currentWeekStart, setCurrentWeekStart] = useState(() => {
     const today = new Date();
-    return startOfWeek(today, { weekStartsOn: 0 });
+    return startOfWeek(today, { weekStartsOn: 1 }); // Start week on Monday
   });
 
   const getDaysInWeek = () => {
     const days = [];
-    for (let i = 0; i < 7; i++) {
+    // Only show Monday to Friday (5 days)
+    for (let i = 0; i < 5; i++) {
       days.push(addDays(currentWeekStart, i));
     }
     return days;
@@ -48,7 +49,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
 
   const goToToday = () => {
     const today = new Date();
-    setCurrentWeekStart(startOfWeek(today, { weekStartsOn: 0 }));
+    setCurrentWeekStart(startOfWeek(today, { weekStartsOn: 1 }));
   };
 
   const days = getDaysInWeek();
@@ -58,7 +59,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     <>
       <div className="bg-white rounded-lg shadow-lg p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-gray-800">Weekly Schedule</h2>
+          <h2 className="text-xl font-semibold text-gray-800">Weekly Schedule (Mon-Fri)</h2>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => navigateWeek('prev')}>
               Previous Week

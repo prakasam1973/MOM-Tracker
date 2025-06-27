@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { CalendarHeader } from '@/components/CalendarHeader';
 import { CalendarGrid } from '@/components/CalendarGrid';
@@ -205,17 +206,20 @@ const Index = () => {
             </div>
 
             <div className="bg-white rounded-lg shadow-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Categories</h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Event Summary</h3>
               <div className="space-y-2 text-sm">
-                {(['work', 'personal', 'health', 'meeting', 'appointment', 'social'] as const).map(category => {
-                  const count = events.filter(e => e.category === category).length;
-                  return (
-                    <div key={category} className="flex justify-between">
-                      <span className="capitalize text-gray-600">{category}:</span>
-                      <span className="font-medium">{count}</span>
-                    </div>
-                  );
-                })}
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Total Events:</span>
+                  <span className="font-medium">{events.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">With Person:</span>
+                  <span className="font-medium">{events.filter(e => e.person && e.person.trim() !== '').length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">With Location:</span>
+                  <span className="font-medium">{events.filter(e => e.location && e.location.trim() !== '').length}</span>
+                </div>
               </div>
             </div>
           </div>

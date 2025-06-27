@@ -14,22 +14,6 @@ interface EventCardProps {
   allEvents: DailyEvent[];
 }
 
-const categoryColors = {
-  work: 'bg-blue-100 text-blue-800 border-blue-200',
-  personal: 'bg-green-100 text-green-800 border-green-200',
-  health: 'bg-purple-100 text-purple-800 border-purple-200',
-  meeting: 'bg-red-100 text-red-800 border-red-200',
-  appointment: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  social: 'bg-pink-100 text-pink-800 border-pink-200',
-  other: 'bg-gray-100 text-gray-800 border-gray-200',
-};
-
-const priorityColors = {
-  low: 'border-l-gray-400',
-  medium: 'border-l-yellow-400',
-  high: 'border-l-red-400',
-};
-
 const statusColors = {
   scheduled: 'bg-blue-50 border-blue-200',
   completed: 'bg-green-50 border-green-200',
@@ -66,16 +50,13 @@ export const EventCard: React.FC<EventCardProps> = ({
 
   return (
     <>
-      <div className={`border-l-4 ${priorityColors[event.priority]} ${statusColors[event.status]} p-3 rounded-r border border-l-0 shadow-sm transition-all hover:shadow-md`}>
+      <div className={`border-l-4 border-l-blue-400 ${statusColors[event.status]} p-3 rounded-r border border-l-0 shadow-sm transition-all hover:shadow-md`}>
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
               <h4 className={`font-medium ${event.status === 'cancelled' ? 'line-through text-gray-500' : 'text-gray-800'}`}>
                 {event.title}
               </h4>
-              <span className={`px-2 py-1 text-xs rounded-full border ${categoryColors[event.category]}`}>
-                {event.category}
-              </span>
               <div className="flex items-center gap-1">
                 <StatusIcon className="w-3 h-3" />
                 <span className="text-xs capitalize">{event.status}</span>
@@ -96,6 +77,12 @@ export const EventCard: React.FC<EventCardProps> = ({
                 </div>
               )}
             </div>
+
+            {event.person && (
+              <p className="text-xs text-gray-600 mb-2">
+                <strong>Person:</strong> {event.person}
+              </p>
+            )}
 
             {event.notes && (
               <p className="text-xs text-gray-600 bg-gray-50 p-2 rounded mb-2">

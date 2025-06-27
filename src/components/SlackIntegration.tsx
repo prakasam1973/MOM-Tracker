@@ -50,8 +50,10 @@ export const SlackIntegration: React.FC<SlackIntegrationProps> = ({ events, onCl
         dayEvents
           .sort((a, b) => a.startTime.localeCompare(b.startTime))
           .forEach(event => {
-            const emoji = getEventEmoji(event.category);
-            message += `${emoji} ${event.startTime}-${event.endTime}: *${event.title}*\n`;
+            message += `📌 ${event.startTime}-${event.endTime}: *${event.title}*\n`;
+            if (event.person) {
+              message += `   👤 ${event.person}\n`;
+            }
             message += `   📍 ${event.location}\n`;
             if (event.description) {
               message += `   💭 ${event.description}\n`;
@@ -62,19 +64,6 @@ export const SlackIntegration: React.FC<SlackIntegrationProps> = ({ events, onCl
       });
 
     return message;
-  };
-
-  const getEventEmoji = (category: DailyEvent['category']) => {
-    const emojis = {
-      work: '💼',
-      personal: '🏠',
-      health: '🏥',
-      meeting: '🤝',
-      appointment: '📋',
-      social: '🎉',
-      other: '📌',
-    };
-    return emojis[category];
   };
 
   const sendToSlack = async () => {

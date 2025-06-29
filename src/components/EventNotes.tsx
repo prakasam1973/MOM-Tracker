@@ -4,7 +4,9 @@ import { DailyEvent } from '@/types/daily';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { X, FileText, List, ListOrdered } from 'lucide-react';
+import { X, FileText } from 'lucide-react';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 interface EventNotesProps {
   isOpen: boolean;
@@ -191,7 +193,7 @@ export const EventNotes: React.FC<EventNotesProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl">
         <div className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center gap-2">
             <FileText className="w-5 h-5 text-blue-600" />
@@ -210,44 +212,24 @@ export const EventNotes: React.FC<EventNotesProps> = ({
           
           <div className="space-y-3">
             <Label htmlFor="notes">Notes</Label>
-            
-            <div className="flex gap-2 mb-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={insertBulletPoint}
-                className={`flex items-center gap-1 text-xs ${
-                  currentListType === 'bullet' ? 'bg-blue-50 border-blue-300' : ''
-                }`}
-              >
-                <List className="w-3 h-3" />
-                Bullets
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={insertNumberedList}
-                className={`flex items-center gap-1 text-xs ${
-                  currentListType === 'numbered' ? 'bg-blue-50 border-blue-300' : ''
-                }`}
-              >
-                <ListOrdered className="w-3 h-3" />
-                Numbers
-              </Button>
-            </div>
-            
-            <Textarea
-              ref={textareaRef}
+            <ReactQuill
               id="notes"
               value={notes}
-              onChange={handleNotesChange}
-              onKeyDown={handleKeyDown}
-              placeholder="Add your notes about this event..."
-              rows={6}
-              className="resize-none"
+              onChange={setNotes}
+              placeholder="Add your notes about this event... Use bullets and numbering from the toolbar."
+              modules={{
+                toolbar: [
+                  [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                  ['bold', 'italic', 'underline'],
+                  ['link'],
+                  ['clean']
+                ]
+              }}
+              style={{ minHeight: '160px', marginBottom: '8px' }}
             />
+            <div className="text-xs text-gray-500 mt-1">
+              Supports bullets and numbering using the toolbar above.
+            </div>
           </div>
           
           <div className="flex gap-3 pt-4">

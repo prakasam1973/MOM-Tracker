@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { X } from 'lucide-react';
 import { format } from 'date-fns';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 interface EventFormProps {
   onSubmit: (event: Omit<DailyEvent, 'id'>) => void;
@@ -29,26 +31,79 @@ export const EventForm: React.FC<EventFormProps> = ({
     location: '',
     notes: '',
   });
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    const newErrors: { [key: string]: string } = {};
+    if (!formData.person.trim()) newErrors.person = 'Person name is required.';
+    if (!formData.title.trim()) newErrors.title = 'Event title is required.';
+    if (!formData.description.trim()) newErrors.description = 'Description is required.';
+    if (!formData.date.trim()) newErrors.date = 'Date is required.';
+    if (!formData.startTime.trim()) newErrors.startTime = 'Start time is required.';
+    if (!formData.endTime.trim()) newErrors.endTime = 'End time is required.';
+    if (!formData.notes.trim()) newErrors.notes = 'Notes is required.';
+
+    // Check if selected date is a weekday
+    if (formData.date) {
+      const dateObj = new Date(formData.date);
+      const day = dateObj.getDay();
+      if (day === 0 || day === 6) {
+        newErrors.date = 'Please select a weekday (Monday to Friday).';
+      }
+    }
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      return;
+    }
+
     const eventData: Omit<DailyEvent, 'id'> = {
       ...formData,
       date: new Date(formData.date),
       status: 'scheduled',
     };
-    
+
     onSubmit(eventData);
+    // Reset form after submit
+    setFormData({
+      person: '',
+      title: '',
+      description: '',
+      date: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
+      startTime: '09:00',
+      endTime: '10:00',
+      location: '',
+      notes: '',
+    });
+    setErrors({});
   };
 
   const handleChange = (field: string, value: string) => {
+    // If changing date, check if it's a weekday
+    if (field === 'date') {
+      const dateObj = new Date(value);
+      const day = dateObj.getDay();
+      if (day === 0 || day === 6) {
+        setErrors(prev => ({
+          ...prev,
+          date: 'Please select a weekday (Monday to Friday).'
+        }));
+      } else {
+        setErrors(prev => {
+          const { date, ...rest } = prev;
+          return rest;
+        });
+      }
+    }
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-xl font-semibold text-gray-800">Add New Event</h2>
           <Button variant="ghost" size="sm" onClick={onClose}>
@@ -58,7 +113,9 @@ export const EventForm: React.FC<EventFormProps> = ({
         
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <Label htmlFor="person">Person Name</Label>
+            <Label htmlFor="person">
+              Person Name <span className="text-red-500" title="Required">*</span>
+            </Label>
             <Input
               id="person"
               value={formData.person}
@@ -68,7 +125,9 @@ export const EventForm: React.FC<EventFormProps> = ({
           </div>
 
           <div>
-            <Label htmlFor="title">Event Title</Label>
+            <Label htmlFor="title">
+              Event Title <span className="text-red-500" title="Required">*</span>
+            </Label>
             <Input
               id="title"
               value={formData.title}
@@ -79,7 +138,9 @@ export const EventForm: React.FC<EventFormProps> = ({
           </div>
 
           <div>
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">
+              Description <span className="text-red-500" title="Required">*</span>
+            </Label>
             <Input
               id="description"
               value={formData.description}
@@ -89,7 +150,7 @@ export const EventForm: React.FC<EventFormProps> = ({
           </div>
 
           <div>
-            <Label htmlFor="date">Date</Label>
+            <Label htmlFor="date">Date <span className="text-red-500">*</span></Label>
             <Input
               id="date"
               type="date"
@@ -97,6 +158,12 @@ export const EventForm: React.FC<EventFormProps> = ({
               onChange={(e) => handleChange('date', e.target.value)}
               required
             />
+            <div className="text-xs text-gray-500 mt-1">
+              Only weekdays (Monday to Friday) are allowed.
+            </div>
+            {errors.date && (
+              <div className="text-xs text-red-500 mt-1">{errors.date}</div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -133,15 +200,28 @@ export const EventForm: React.FC<EventFormProps> = ({
           </div>
 
           <div>
-            <Label htmlFor="notes">Notes (Optional)</Label>
-            <Textarea
+            <Label htmlFor="notes">Notes <span className="text-red-500">*</span></Label>
+            <ReactQuill
               id="notes"
               value={formData.notes}
-              onChange={(e) => handleChange('notes', e.target.value)}
-              placeholder="Add any notes about this event..."
-              rows={3}
-              className="resize-none"
+              onChange={(value) => handleChange('notes', value)}
+              placeholder="Add any notes about this event... Use bullets and numbering from the toolbar."
+              modules={{
+                toolbar: [
+                  [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                  ['bold', 'italic', 'underline'],
+                  ['link'],
+                  ['clean']
+                ]
+              }}
+              style={{ minHeight: '160px', marginBottom: '8px' }}
             />
+            <div className="text-xs text-gray-500 mt-1">
+              Supports bullets and numbering using the toolbar above.
+            </div>
+            {errors.notes && (
+              <div className="text-xs text-red-500 mt-1">{errors.notes}</div>
+            )}
           </div>
 
           <div className="flex gap-3 pt-4">

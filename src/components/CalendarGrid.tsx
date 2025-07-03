@@ -13,6 +13,7 @@ interface CalendarGridProps {
   onDeleteEvent: (eventId: string) => void;
   onUpdateEvent: (event: DailyEvent) => void;
   onRescheduleEvent: (eventId: string, newDate: Date, newStartTime: string, newEndTime: string) => void;
+  filter?: 'all' | 'withEvents';
 }
 
 export const CalendarGrid: React.FC<CalendarGridProps> = ({
@@ -21,12 +22,16 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
   onDeleteEvent,
   onUpdateEvent,
   onRescheduleEvent,
+  filter,
 }) => {
-  const [printDate, setPrintDate] = useState<Date | null>(null);
+  // Removed printDate state (Print Day functionality)
   const [currentWeekStart, setCurrentWeekStart] = useState(() => {
     const today = new Date();
     return startOfWeek(today, { weekStartsOn: 1 }); // Start week on Monday
   });
+
+  // Expanded state for event accordions: { [eventId]: boolean }
+  const [expandedEvents, setExpandedEvents] = useState<{ [eventId: string]: boolean }>({});
 
   const getDaysInWeek = () => {
     const days = [];
@@ -52,8 +57,13 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     setCurrentWeekStart(startOfWeek(today, { weekStartsOn: 1 }));
   };
 
-  const days = getDaysInWeek();
+  let days = getDaysInWeek();
   const today = new Date();
+
+  // Filter days if needed
+  if (filter === 'withEvents') {
+    days = days.filter(day => getEventsForDate(day).length > 0);
+  }
 
   return (
     <>
@@ -79,7 +89,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
             const isToday = isSameDay(day, today);
             
             return (
-              <div key={index} className={`border rounded-lg p-4 transition-colors ${
+              <div key={index} className={`border rounded-lg p-4 transition-colors w-full ${
                 isToday ? 'bg-blue-50 border-blue-200' : 'hover:bg-gray-50'
               }`}>
                 <div className="flex items-center justify-between mb-3">
@@ -95,15 +105,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                     </p>
                   </div>
                   <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setPrintDate(day)}
-                      className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                    >
-                      <Printer className="w-4 h-4 mr-1" />
-                      Print Day
-                    </Button>
+                    {/* Print Day button removed */}
                     <button
                       onClick={() => onDateSelect(day)}
                       className="text-sm text-blue-600 hover:text-blue-700 font-medium"
@@ -116,14 +118,33 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                 <div className="space-y-2">
                   {dayEvents.length > 0 ? (
                     dayEvents.map(event => (
-                      <EventCard
-                        key={event.id}
-                        event={event}
-                        onDelete={onDeleteEvent}
-                        onUpdate={onUpdateEvent}
-                        onReschedule={onRescheduleEvent}
-                        allEvents={events}
-                      />
+                      <div key={event.id} className="border rounded">
+                        <div
+                          className="flex items-center justify-between cursor-pointer px-3 py-2 bg-gray-50 hover:bg-blue-50"
+                          onClick={() =>
+                            setExpandedEvents(prev => ({
+                              ...prev,
+                              [event.id]: !prev[event.id],
+                            }))
+                          }
+                        >
+                          <span className="font-medium text-gray-700">{event.title || "Event"}</span>
+                          <span className="text-xs text-gray-500">
+                            {expandedEvents[event.id] ? "▲" : "▼"}
+                          </span>
+                        </div>
+                        {expandedEvents[event.id] && (
+                          <div className="p-2">
+                            <EventCard
+                              event={event}
+                              onDelete={onDeleteEvent}
+                              onUpdate={onUpdateEvent}
+                              onReschedule={onRescheduleEvent}
+                              allEvents={events}
+                            />
+                          </div>
+                        )}
+                      </div>
                     ))
                   ) : (
                     <p className="text-gray-400 text-sm italic">No events scheduled</p>
@@ -135,13 +156,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
         </div>
       </div>
 
-      {printDate && (
-        <PrintView
-          date={printDate}
-          events={getEventsForDate(printDate)}
-          onClose={() => setPrintDate(null)}
-        />
-      )}
+      {/* PrintView for Print Day removed */}
     </>
   );
 };

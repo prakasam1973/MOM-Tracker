@@ -11,7 +11,7 @@ export const CalendarHeader: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Prakasam's Meeting MOM tracker
+            Minutes of Meeting Tracker
           </h1>
           <div className="flex items-center gap-4 text-gray-600">
             <div className="flex items-center gap-2">

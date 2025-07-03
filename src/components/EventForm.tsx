@@ -102,8 +102,8 @@ export const EventForm: React.FC<EventFormProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 flex items-center justify-center z-50 p-4" style={{ backgroundColor: '#f4f8fb' }}>
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-full">
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-xl font-semibold text-gray-800">Add New Event</h2>
           <Button variant="ghost" size="sm" onClick={onClose}>
@@ -126,15 +126,25 @@ export const EventForm: React.FC<EventFormProps> = ({
 
           <div>
             <Label htmlFor="title">
-              Event Title <span className="text-red-500" title="Required">*</span>
+              Meeting Title <span className="text-red-500" title="Required">*</span>
             </Label>
-            <Input
+            <select
               id="title"
               value={formData.title}
               onChange={(e) => handleChange('title', e.target.value)}
-              placeholder="e.g., Team Meeting"
               required
-            />
+              className="border rounded px-3 py-2 w-full"
+            >
+              <option value="" disabled>
+                Select meeting type
+              </option>
+              <option value="Weekly 1 X1">Weekly 1 X1</option>
+              <option value="Monthly 1 x1">Monthly 1 x1</option>
+              <option value="POD review">POD review</option>
+              <option value="adhoc meeting">adhoc meeting</option>
+              <option value="Staff meeting">Staff meeting</option>
+              <option value="Operational Meeting">Operational Meeting</option>
+            </select>
           </div>
 
           <div>

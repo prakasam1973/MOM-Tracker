@@ -85,9 +85,12 @@ export const EventCard: React.FC<EventCardProps> = ({
             )}
 
             {event.notes && (
-              <p className="text-xs text-gray-600 bg-gray-50 p-2 rounded mb-2">
-                <strong>Notes:</strong> {event.notes}
-              </p>
+              <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded mb-2">
+                <strong>Notes:</strong>{" "}
+                <span
+                  dangerouslySetInnerHTML={{ __html: event.notes }}
+                />
+              </div>
             )}
 
             <div className="flex flex-wrap gap-1">

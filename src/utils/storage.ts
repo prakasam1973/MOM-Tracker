@@ -1,37 +1,46 @@
-
+import Dexie, { Table } from 'dexie';
 import { DailyEvent } from '@/types/daily';
 
-const STORAGE_KEY = 'daily-events';
+class EventsDB extends Dexie {
+  events!: Table<DailyEvent, number>;
 
-export const saveEvents = (events: DailyEvent[]): void => {
+  constructor() {
+    super('EventsDB');
+    this.version(1).stores({
+      events: '++id,date,title,description' // Add other fields as needed
+    });
+  }
+}
+
+const db = new EventsDB();
+
+export const saveEvents = async (events: DailyEvent[]): Promise<void> => {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
+    await db.events.clear();
+    await db.events.bulkAdd(events);
   } catch (error) {
-    console.error('Failed to save events to localStorage:', error);
+    console.error('Failed to save events to IndexedDB:', error);
   }
 };
 
-export const loadEvents = (): DailyEvent[] => {
+export const loadEvents = async (): Promise<DailyEvent[]> => {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) return [];
-    
-    const events = JSON.parse(stored);
-    // Convert date strings back to Date objects
+    const events = await db.events.toArray();
+    // Convert date strings back to Date objects if needed
     return events.map((event: any) => ({
       ...event,
       date: new Date(event.date)
     }));
   } catch (error) {
-    console.error('Failed to load events from localStorage:', error);
+    console.error('Failed to load events from IndexedDB:', error);
     return [];
   }
 };
 
-export const clearEvents = (): void => {
+export const clearEvents = async (): Promise<void> => {
   try {
-    localStorage.removeItem(STORAGE_KEY);
+    await db.events.clear();
   } catch (error) {
-    console.error('Failed to clear events from localStorage:', error);
+    console.error('Failed to clear events from IndexedDB:', error);
   }
 };

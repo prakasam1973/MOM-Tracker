@@ -178,9 +178,10 @@ const CSRPage: React.FC = () => {
   const maxDate = new Date().toISOString().slice(0, 10);
 
   return (
-    <div className="flex flex-col items-center min-h-[80vh] py-10">
-      <div className="w-full max-w-full bg-white/90 rounded-2xl shadow-xl p-10 border border-border">
-        <div className="flex items-center mb-4">
+    <div className="flex flex-col items-center min-h-[80vh] py-10 bg-gradient-to-br from-blue-600 via-cyan-400 to-indigo-400">
+      <div className="w-full max-w-full bg-white/90 rounded-2xl shadow-2xl p-0 border border-border overflow-hidden">
+        {/* Header bar */}
+        <div className="flex items-center px-10 py-6 bg-gradient-to-r from-blue-700 to-cyan-500">
           <Button
             variant="outline"
             className="mr-4"
@@ -188,10 +189,11 @@ const CSRPage: React.FC = () => {
           >
             Back
           </Button>
-          <h2 className="text-3xl font-extrabold flex-1 text-center text-primary tracking-tight">
+          <h2 className="text-3xl font-extrabold flex-1 text-center text-white drop-shadow tracking-tight">
             CSR Events
           </h2>
         </div>
+        <div className="p-10">
         <form
           className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8"
           onSubmit={handleAdd}
@@ -445,6 +447,7 @@ const CSRPage: React.FC = () => {
             </thead>
             {/* ...table body and footer unchanged... */}
           </table>
+        </div>
         </div>
       </div>
     </div>

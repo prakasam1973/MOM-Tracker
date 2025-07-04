@@ -132,9 +132,10 @@ const AttendancePage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center min-h-[80vh] py-10">
-      <div className="w-full max-w-full bg-white/90 rounded-2xl shadow-xl p-10 border border-border min-h-screen">
-        <div className="flex items-center mb-6">
+    <div className="flex flex-col items-center min-h-[80vh] py-10 bg-gradient-to-br from-blue-600 via-cyan-400 to-indigo-400">
+      <div className="w-full max-w-full bg-white/90 rounded-2xl shadow-2xl p-0 border border-border min-h-screen overflow-hidden">
+        {/* Header bar */}
+        <div className="flex items-center px-10 py-6 bg-gradient-to-r from-blue-700 to-cyan-500">
           <Button
             variant="outline"
             className="mr-4"
@@ -142,10 +143,11 @@ const AttendancePage: React.FC = () => {
           >
             Back
           </Button>
-          <h2 className="text-2xl font-extrabold flex-1 text-center text-primary tracking-tight">
+          <h2 className="text-2xl font-extrabold flex-1 text-center text-white drop-shadow tracking-tight">
             Daily Attendance
           </h2>
         </div>
+        <div className="p-10">
         <form className="mb-8" onSubmit={e => {
           e.preventDefault();
           if (alreadyMarked) return;
@@ -431,6 +433,7 @@ const AttendancePage: React.FC = () => {
               </tr>
             </tfoot>
           </table>
+        </div>
         </div>
       </div>
     </div>

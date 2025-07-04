@@ -153,14 +153,14 @@ const MomNotesList = () => {
   const handlePageClick = (page: number) => setCurrentPage(page);
 
   return (
-    <div className="flex flex-col items-center min-h-[80vh] py-10">
-      <div className="w-full max-w-5xl bg-white/90 rounded-2xl shadow-xl p-8 border border-border">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-3xl font-extrabold text-primary tracking-tight flex-1">My Todo Items</h2>
-          <Button variant="outline" className="ml-4" onClick={() => navigate(-1)}>
-            Back
-          </Button>
+    <div className="flex flex-col items-center min-h-[80vh] py-10 bg-gradient-to-br from-blue-100 via-cyan-100 to-pink-100">
+      <div className="w-full max-w-5xl bg-white/90 rounded-2xl shadow-2xl p-0 border border-border overflow-hidden">
+        {/* Header bar */}
+        <div className="flex items-center justify-between px-8 py-6 bg-gradient-to-r from-blue-400 to-pink-300">
+          <h2 className="text-3xl font-extrabold text-white drop-shadow tracking-tight flex-1">My Todo Items</h2>
+          {/* Back button removed */}
         </div>
+        <div className="p-8">
         <div className="mb-8 flex flex-wrap gap-4 items-center justify-between">
           {/* Status Filter */}
           <div>
@@ -441,7 +441,8 @@ const MomNotesList = () => {
         </div>
       ) : null}
     </div>
-  );
+      </div>
+);
 };
 
 export default MomNotesList;

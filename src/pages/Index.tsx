@@ -21,7 +21,7 @@ const Index = () => {
 
   const navigate = useNavigate();
   // Use a single state for active view: "menu", "joke", "todos", "steps", "about"
-  const [activeView, setActiveView] = useState<"menu" | "joke" | "todos" | "steps" | "about">("menu");
+  const [activeView, setActiveView] = useState<"menu" | "joke" | "todos" | "steps" | "about" | "goals" | "ai" | "inspiration">("menu");
 
   // Handler for "Track Minutes of Meeting"
   // Handler functions for navigation
@@ -362,6 +362,44 @@ const Index = () => {
               <span className="text-sm text-pink-700 mt-1">Set personal reminders</span>
             </button>
               <button
+                onClick={() => setActiveView("goals")}
+                className="flex flex-col items-center justify-center bg-gradient-to-br from-green-200 to-green-100 rounded-xl shadow hover:scale-105 transition p-6 border-2 border-green-300 focus:outline-none"
+              >
+                <span className="mb-2">
+                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path d="M12 20v-6M6 20v-4M18 20v-2" />
+                    <circle cx="12" cy="10" r="4" />
+                  </svg>
+                </span>
+                <span className="font-semibold text-lg text-green-900">Goal Tracker</span>
+                <span className="text-sm text-green-700 mt-1">Track daily, weekly, and monthly goals</span>
+              </button>
+              <button
+                onClick={() => setActiveView("ai")}
+                className="flex flex-col items-center justify-center bg-gradient-to-br from-yellow-200 to-yellow-100 rounded-xl shadow hover:scale-105 transition p-6 border-2 border-yellow-300 focus:outline-none"
+              >
+                <span className="mb-2">
+                  <svg className="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M9 9h6v6H9z" />
+                  </svg>
+                </span>
+                <span className="font-semibold text-lg text-yellow-900">AI Assistant</span>
+                <span className="text-sm text-yellow-700 mt-1">Planner, ideas, drafting, voice notes</span>
+              </button>
+              <button
+                onClick={() => setActiveView("inspiration")}
+                className="flex flex-col items-center justify-center bg-gradient-to-br from-orange-200 to-yellow-100 rounded-xl shadow hover:scale-105 transition p-6 border-2 border-orange-300 focus:outline-none"
+              >
+                <span className="mb-2">
+                  <svg className="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path d="M12 2v20M2 12h20" />
+                  </svg>
+                </span>
+                <span className="font-semibold text-lg text-orange-900">Inspiration</span>
+                <span className="text-sm text-orange-700 mt-1">Quote or Tip of the Day</span>
+              </button>
+              <button
                 onClick={() => setActiveView("about")}
                 className="flex flex-col items-center justify-center bg-gradient-to-br from-gray-200 to-gray-100 rounded-xl shadow hover:scale-105 transition p-6 border-2 border-gray-300 focus:outline-none"
               >
@@ -374,6 +412,45 @@ const Index = () => {
                 <span className="font-semibold text-lg text-gray-900">About App</span>
                 <span className="text-sm text-gray-700 mt-1">Version & Tech Stack</span>
               </button>
+          </div>
+        )}
+        {activeView === "goals" && (
+          <div className="px-8 py-8">
+            <div className="flex justify-end mb-4">
+              <Button
+                onClick={handleShowDashboard}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Back to Dashboard
+              </Button>
+            </div>
+            <GoalTrackerSection />
+          </div>
+        )}
+        {activeView === "ai" && (
+          <div className="px-8 py-8">
+            <div className="flex justify-end mb-4">
+              <Button
+                onClick={handleShowDashboard}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Back to Dashboard
+              </Button>
+            </div>
+            <AIAssistantSection />
+          </div>
+        )}
+        {activeView === "inspiration" && (
+          <div className="px-8 py-8">
+            <div className="flex justify-end mb-4">
+              <Button
+                onClick={handleShowDashboard}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Back to Dashboard
+              </Button>
+            </div>
+            <InspirationSection />
           </div>
         )}
 
@@ -584,4 +661,573 @@ const Index = () => {
     </div>
   );
 }
+
+// --- GoalTrackerSection component ---
+type GoalType = "Daily" | "Weekly" | "Monthly";
+interface Goal {
+  id: string;
+  type: GoalType;
+  description: string;
+  targetDate: string;
+  status: "Pending" | "Completed";
+}
+const GOAL_TYPES: GoalType[] = ["Daily", "Weekly", "Monthly"];
+const STATUS_OPTIONS = ["Pending", "Completed"];
+
+const GoalTrackerSection: React.FC = () => {
+  const [goals, setGoals] = React.useState<Goal[]>(() => {
+    try {
+      const saved = localStorage.getItem("goals");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [form, setForm] = React.useState<Omit<Goal, "id">>({
+    type: "Daily",
+    description: "",
+    targetDate: "",
+    status: "Pending",
+  });
+  const [editId, setEditId] = React.useState<string | null>(null);
+  const [editForm, setEditForm] = React.useState<Omit<Goal, "id"> | null>(null);
+  const [filterType, setFilterType] = React.useState<GoalType | "All">("All");
+
+  React.useEffect(() => {
+    localStorage.setItem("goals", JSON.stringify(goals));
+  }, [goals]);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleEditChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    if (!editForm) return;
+    const { name, value } = e.target;
+    setEditForm((prev) =>
+      prev
+        ? {
+            ...prev,
+            [name]: value,
+          }
+        : null
+    );
+  };
+
+  const handleAdd = (e: React.FormEvent) => {
+    e.preventDefault();
+    setGoals((prev) => [
+      ...prev,
+      {
+        id: Date.now().toString(),
+        ...form,
+      },
+    ]);
+    setForm({
+      type: "Daily",
+      description: "",
+      targetDate: "",
+      status: "Pending",
+    });
+  };
+
+  const handleEdit = (id: string) => {
+    const goal = goals.find((g) => g.id === id);
+    if (goal) {
+      setEditId(id);
+      setEditForm({
+        type: goal.type,
+        description: goal.description,
+        targetDate: goal.targetDate,
+        status: goal.status,
+      });
+    }
+  };
+
+  const handleEditSave = (id: string) => {
+    if (!editForm) return;
+    setGoals((prev) =>
+      prev.map((g) => (g.id === id ? { ...g, ...editForm } : g))
+    );
+    setEditId(null);
+    setEditForm(null);
+  };
+
+  const handleEditCancel = () => {
+    setEditId(null);
+    setEditForm(null);
+  };
+
+  const handleDelete = (id: string) => {
+    setGoals((prev) => prev.filter((g) => g.id !== id));
+    if (editId === id) {
+      setEditId(null);
+      setEditForm(null);
+    }
+  };
+
+  const filteredGoals =
+    filterType === "All"
+      ? goals
+      : goals.filter((g) => g.type === filterType);
+
+  return (
+    <div className="flex flex-col items-center min-h-[60vh] py-6 bg-gradient-to-br from-green-100 via-blue-50 to-indigo-50 rounded-xl">
+      <div className="w-full max-w-2xl bg-white/90 rounded-2xl shadow-2xl p-6 border border-border overflow-hidden">
+        <h2 className="text-2xl font-extrabold text-center text-green-800 mb-6">
+          Goal Tracker
+        </h2>
+        <form
+          className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8"
+          onSubmit={handleAdd}
+        >
+          <div>
+            <label className="block font-semibold mb-1 text-green-900">
+              Goal Type
+            </label>
+            <select
+              name="type"
+              value={form.type}
+              onChange={handleChange}
+              className="w-full border border-green-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-300 transition"
+              required
+            >
+              {GOAL_TYPES.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block font-semibold mb-1 text-green-900">
+              Target Date
+            </label>
+            <input
+              type="date"
+              name="targetDate"
+              value={form.targetDate}
+              onChange={handleChange}
+              className="w-full border border-green-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-300 transition"
+              required
+            />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block font-semibold mb-1 text-green-900">
+              Description
+            </label>
+            <input
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              className="w-full border border-green-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-300 transition"
+              required
+              placeholder="Describe your goal"
+            />
+          </div>
+          <div>
+            <label className="block font-semibold mb-1 text-green-900">
+              Status
+            </label>
+            <select
+              name="status"
+              value={form.status}
+              onChange={handleChange}
+              className="w-full border border-green-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-300 transition"
+              required
+            >
+              {STATUS_OPTIONS.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-end">
+            <Button
+              type="submit"
+              className="bg-gradient-to-r from-green-600 to-blue-400 text-white shadow-md hover:scale-105 transition w-full"
+            >
+              Add Goal
+            </Button>
+          </div>
+        </form>
+        <div className="flex flex-wrap gap-4 mb-4">
+          <div>
+            <label className="block font-semibold mb-1 text-green-900">
+              Filter by Type
+            </label>
+            <select
+              value={filterType}
+              onChange={(e) =>
+                setFilterType(e.target.value as GoalType | "All")
+              }
+              className="border border-green-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-300 transition"
+            >
+              <option value="All">All</option>
+              {GOAL_TYPES.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <h3 className="text-xl font-bold mb-4 text-green-900">Goals</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full border-separate border-spacing-0 rounded-xl overflow-hidden shadow">
+            <thead>
+              <tr className="bg-gradient-to-r from-green-100 to-blue-100">
+                <th className="p-3 border-b font-semibold text-green-900">
+                  Type
+                </th>
+                <th className="p-3 border-b font-semibold text-green-900">
+                  Description
+                </th>
+                <th className="p-3 border-b font-semibold text-green-900">
+                  Target Date
+                </th>
+                <th className="p-3 border-b font-semibold text-green-900">
+                  Status
+                </th>
+                <th className="p-3 border-b font-semibold text-green-900">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredGoals.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="text-center py-8 text-gray-500">
+                    No goals found.
+                  </td>
+                </tr>
+              ) : (
+                filteredGoals.map((goal) => {
+                  const isEditing = editId === goal.id && editForm;
+                  if (isEditing) {
+                    return (
+                      <tr key={goal.id} className="bg-yellow-50">
+                        <td className="p-2 border-b">
+                          <select
+                            name="type"
+                            value={editForm.type}
+                            onChange={handleEditChange}
+                            className="w-full"
+                          >
+                            {GOAL_TYPES.map((t) => (
+                              <option key={t} value={t}>
+                                {t}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="p-2 border-b">
+                          <input
+                            name="description"
+                            value={editForm.description}
+                            onChange={handleEditChange}
+                            className="w-full"
+                          />
+                        </td>
+                        <td className="p-2 border-b">
+                          <input
+                            type="date"
+                            name="targetDate"
+                            value={editForm.targetDate}
+                            onChange={handleEditChange}
+                            className="w-full"
+                          />
+                        </td>
+                        <td className="p-2 border-b">
+                          <select
+                            name="status"
+                            value={editForm.status}
+                            onChange={handleEditChange}
+                            className="w-full"
+                          >
+                            {STATUS_OPTIONS.map((s) => (
+                              <option key={s} value={s}>
+                                {s}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="p-2 border-b">
+                          <Button
+                            size="sm"
+                            variant="default"
+                            className="mr-2"
+                            onClick={() => handleEditSave(goal.id)}
+                          >
+                            Save
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={handleEditCancel}
+                          >
+                            Cancel
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  }
+                  return (
+                    <tr key={goal.id} className="bg-white even:bg-green-50">
+                      <td className="p-2 border-b">{goal.type}</td>
+                      <td className="p-2 border-b">{goal.description}</td>
+                      <td className="p-2 border-b">{goal.targetDate}</td>
+                      <td className="p-2 border-b">{goal.status}</td>
+                      <td className="p-2 border-b">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="mr-2"
+                          onClick={() => handleEdit(goal.id)}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDelete(goal.id)}
+                        >
+                          Delete
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default Index;
+
+// --- AI Assistant Section ---
+const AIAssistantSection: React.FC = () => {
+  const [planner, setPlanner] = React.useState("");
+  const [ideaPrompt, setIdeaPrompt] = React.useState("");
+  const [ideaResult, setIdeaResult] = React.useState("");
+  const [draftType, setDraftType] = React.useState("email");
+  const [draftPrompt, setDraftPrompt] = React.useState("");
+  const [draftResult, setDraftResult] = React.useState("");
+  const [voiceText, setVoiceText] = React.useState("");
+  const [isRecording, setIsRecording] = React.useState(false);
+
+  // Placeholder for AI features
+  const handleGenerateIdea = () => {
+    const ideas = [
+      "Start a daily gratitude journal.",
+      "Build a personal website to showcase your projects.",
+      "Organize a community clean-up event.",
+      "Create a mobile app for habit tracking.",
+      "Write a blog post about your favorite hobby.",
+      "Design a new productivity tool.",
+      "Launch a podcast on a topic you love.",
+      "Develop a recipe book for quick healthy meals.",
+      "Start a YouTube channel for tutorials.",
+      "Invent a board game for family nights.",
+      "Plan a themed virtual meetup.",
+      "Create a digital art portfolio.",
+      "Write a short story or poem.",
+      "Develop a tool to automate a boring task.",
+      "Start a newsletter for your local community."
+    ];
+    let result = "";
+    if (ideaPrompt.trim()) {
+      // Use the prompt to generate a more relevant idea (simple keyword match)
+      const lowerPrompt = ideaPrompt.toLowerCase();
+      const matched = ideas.find(idea => idea.toLowerCase().includes(lowerPrompt));
+      if (matched) {
+        result = `Idea for "${ideaPrompt}": ${matched}`;
+      } else {
+        // Fallback: combine prompt with a random idea
+        const randomIdea = ideas[Math.floor(Math.random() * ideas.length)];
+        result = `Idea for "${ideaPrompt}": ${randomIdea}`;
+      }
+    } else {
+      // No prompt: just show a random idea
+      result = "Here's a creative idea: " + ideas[Math.floor(Math.random() * ideas.length)];
+    }
+    setIdeaResult(result);
+  };
+
+  const handleDraft = () => {
+    setDraftResult(
+      `Drafted ${draftType}: ${draftPrompt ? draftPrompt : "(no input)"}`
+    );
+  };
+
+  // Voice-to-text (browser API, fallback to placeholder)
+  const handleStartVoice = () => {
+    if ("webkitSpeechRecognition" in window) {
+      // @ts-ignore
+      const recognition = new window.webkitSpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.onresult = (event: any) => {
+        setVoiceText(event.results[0][0].transcript);
+        setIsRecording(false);
+      };
+      recognition.onerror = () => setIsRecording(false);
+      recognition.onend = () => setIsRecording(false);
+      setIsRecording(true);
+      recognition.start();
+    } else {
+      setIsRecording(true);
+      setTimeout(() => {
+        setVoiceText("Voice-to-text is not supported in this browser.");
+        setIsRecording(false);
+      }, 1500);
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center min-h-[60vh] py-6 bg-gradient-to-br from-yellow-100 via-blue-50 to-indigo-50 rounded-xl">
+      <div className="w-full max-w-2xl bg-white/90 rounded-2xl shadow-2xl p-6 border border-border overflow-hidden">
+        <h2 className="text-2xl font-extrabold text-center text-yellow-800 mb-6">
+          AI Assistant
+        </h2>
+        <div className="mb-6">
+          <label className="block font-semibold mb-1 text-yellow-900">
+            Daily Planner
+          </label>
+          <textarea
+            className="w-full border border-yellow-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-yellow-300 transition"
+            rows={2}
+            placeholder="What do you want to plan today?"
+            value={planner}
+            onChange={e => setPlanner(e.target.value)}
+          />
+        </div>
+        <div className="mb-6">
+          <label className="block font-semibold mb-1 text-yellow-900">
+            Idea Generator
+          </label>
+          <div className="flex gap-2">
+            <input
+              className="flex-1 border border-yellow-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-yellow-300 transition"
+              placeholder="Enter a topic or prompt"
+              value={ideaPrompt}
+              onChange={e => setIdeaPrompt(e.target.value)}
+            />
+            <Button onClick={handleGenerateIdea} className="bg-yellow-500 text-white">
+              Generate
+            </Button>
+          </div>
+          {ideaResult && (
+            <div className="mt-2 text-yellow-800 bg-yellow-50 rounded p-2">{ideaResult}</div>
+          )}
+        </div>
+        <div className="mb-6">
+          <label className="block font-semibold mb-1 text-yellow-900">
+            Drafting (Email, Blog, Code, etc.)
+          </label>
+          <div className="flex gap-2 mb-2">
+            <select
+              value={draftType}
+              onChange={e => setDraftType(e.target.value)}
+              className="border border-yellow-200 rounded-lg px-2 py-1"
+            >
+              <option value="email">Email</option>
+              <option value="blog">Blog</option>
+              <option value="code">Code</option>
+              <option value="other">Other</option>
+            </select>
+            <input
+              className="flex-1 border border-yellow-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-yellow-300 transition"
+              placeholder="Describe what to draft"
+              value={draftPrompt}
+              onChange={e => setDraftPrompt(e.target.value)}
+            />
+            <Button onClick={handleDraft} className="bg-yellow-500 text-white">
+              Draft
+            </Button>
+          </div>
+          {draftResult && (
+            <div className="mt-2 text-yellow-800 bg-yellow-50 rounded p-2">{draftResult}</div>
+          )}
+        </div>
+        <div className="mb-6">
+          <label className="block font-semibold mb-1 text-yellow-900">
+            Voice-to-Text for Quick Notes
+          </label>
+          <div className="flex gap-2 items-center">
+            <Button
+              onClick={handleStartVoice}
+              className="bg-yellow-500 text-white"
+              disabled={isRecording}
+            >
+              {isRecording ? "Listening..." : "Start Recording"}
+            </Button>
+            <span className="text-yellow-800">{voiceText}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- Inspiration Section ---
+const InspirationSection: React.FC = () => {
+  const quotes = [
+    "The best way to get started is to quit talking and begin doing. – Walt Disney",
+    "Success is not in what you have, but who you are. – Bo Bennett",
+    "Don’t let yesterday take up too much of today. – Will Rogers",
+    "It’s not whether you get knocked down, it’s whether you get up. – Vince Lombardi",
+    "If you are working on something exciting, it will keep you motivated. – Steve Jobs",
+    "The harder you work for something, the greater you’ll feel when you achieve it.",
+    "Dream bigger. Do bigger.",
+    "Don’t watch the clock; do what it does. Keep going. – Sam Levenson",
+    "Great things never come from comfort zones.",
+    "Push yourself, because no one else is going to do it for you.",
+    "Success doesn’t just find you. You have to go out and get it.",
+    "The only limit to our realization of tomorrow is our doubts of today. – F.D. Roosevelt",
+    "Small steps in the right direction can turn out to be the biggest step of your life.",
+    "You don’t have to be great to start, but you have to start to be great. – Zig Ziglar",
+    "Stay positive, work hard, make it happen."
+  ];
+  const [quote, setQuote] = React.useState(() => {
+    // Show a new quote each day based on date
+    const day = new Date().getDate();
+    return quotes[day % quotes.length];
+  });
+
+  const handleNewQuote = () => {
+    let newQuote = quote;
+    while (newQuote === quote) {
+      newQuote = quotes[Math.floor(Math.random() * quotes.length)];
+    }
+    setQuote(newQuote);
+  };
+
+  return (
+    <div className="flex flex-col items-center min-h-[40vh] py-6 bg-gradient-to-br from-orange-100 via-yellow-50 to-indigo-50 rounded-xl">
+      <div className="w-full max-w-xl bg-white/90 rounded-2xl shadow-2xl p-8 border border-border overflow-hidden flex flex-col items-center">
+        <h2 className="text-2xl font-extrabold text-center text-orange-800 mb-6">
+          Inspiration of the Day
+        </h2>
+        <div className="text-xl text-orange-900 font-semibold text-center mb-6">
+          “{quote}”
+        </div>
+        <Button onClick={handleNewQuote} className="bg-orange-500 text-white">
+          Show Another
+        </Button>
+      </div>
+    </div>
+  );
+};

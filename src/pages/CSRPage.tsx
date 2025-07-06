@@ -445,7 +445,247 @@ const CSRPage: React.FC = () => {
                 <th className="p-3 border-b font-semibold text-blue-900">Actions</th>
               </tr>
             </thead>
-            {/* ...table body and footer unchanged... */}
+            <tbody>
+              {filteredEvents.length === 0 ? (
+                <tr>
+                  <td colSpan={13} className="text-center py-8 text-gray-500">
+                    No event records found.
+                  </td>
+                </tr>
+              ) : (
+                filteredEvents.map((event, idx) => {
+                  const isEditing = editIdx === idx;
+                  if (isEditing && editForm) {
+                    return (
+                      <tr key={idx} className="bg-yellow-50">
+                        <td className="p-2 border-b">
+                          <select
+                            name="financialYear"
+                            value={editForm.financialYear}
+                            onChange={handleEditChange}
+                            className="w-full"
+                          >
+                            {FINANCIAL_YEARS.map(fy => (
+                              <option key={fy} value={fy}>{fy}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="p-2 border-b">
+                          <select
+                            name="ngoName"
+                            value={editForm.ngoName}
+                            onChange={handleEditChange}
+                            className="w-full"
+                          >
+                            {NGO_NAMES.map(ngo => (
+                              <option key={ngo} value={ngo}>{ngo}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="p-2 border-b">
+                          <select
+                            name="phase"
+                            value={editForm.phase}
+                            onChange={handleEditChange}
+                            className="w-full"
+                          >
+                            {PHASES.map(p => (
+                              <option key={p} value={p}>{p}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="p-2 border-b">
+                          <select
+                            name="project"
+                            value={editForm.project}
+                            onChange={handleEditChange}
+                            className="w-full"
+                          >
+                            {PROJECTS.map(p => (
+                              <option key={p} value={p}>{p}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="p-2 border-b">
+                          <input
+                            name="location"
+                            value={editForm.location}
+                            onChange={handleEditChange}
+                            className="w-full"
+                          />
+                        </td>
+                        <td className="p-2 border-b">
+                          <input
+                            name="googleLocation"
+                            value={editForm.googleLocation}
+                            onChange={handleEditChange}
+                            className="w-full"
+                          />
+                        </td>
+                        <td className="p-2 border-b">
+                          <input
+                            type="date"
+                            name="startDate"
+                            value={editForm.startDate}
+                            onChange={handleEditChange}
+                            className="w-full"
+                          />
+                        </td>
+                        <td className="p-2 border-b">
+                          <input
+                            type="date"
+                            name="endDate"
+                            value={editForm.endDate}
+                            onChange={handleEditChange}
+                            className="w-full"
+                          />
+                        </td>
+                        <td className="p-2 border-b">
+                          <input
+                            type="date"
+                            name="inaugurationDate"
+                            value={editForm.inaugurationDate}
+                            onChange={handleEditChange}
+                            className="w-full"
+                          />
+                        </td>
+                        <td className="p-2 border-b">
+                          <input
+                            type="number"
+                            name="participants"
+                            value={editForm.participants}
+                            onChange={handleEditChange}
+                            className="w-full"
+                          />
+                        </td>
+                        <td className="p-2 border-b">
+                          <input
+                            type="number"
+                            name="totalCost"
+                            value={editForm.totalCost}
+                            onChange={handleEditChange}
+                            className="w-full"
+                          />
+                        </td>
+                        <td className="p-2 border-b">
+                          <select
+                            name="status"
+                            value={editForm.status}
+                            onChange={handleEditChange}
+                            className="w-full"
+                          >
+                            {STATUSES.map(s => (
+                              <option key={s} value={s}>{s}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="p-2 border-b">
+                          <Button
+                            size="sm"
+                            variant="default"
+                            className="mr-2"
+                            onClick={() => handleEditSave(idx)}
+                          >
+                            Save
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={handleEditCancel}
+                          >
+                            Cancel
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  }
+                  // Normal display row
+                  return (
+                    <tr key={idx} className="bg-white even:bg-blue-50">
+                      <td className="p-2 border-b">{event.financialYear}</td>
+                      <td className="p-2 border-b">{event.ngoName}</td>
+                      <td className="p-2 border-b">{event.phase}</td>
+                      <td className="p-2 border-b">{event.project}</td>
+                      <td className="p-2 border-b">{event.location}</td>
+                      <td className="p-2 border-b">
+                        {event.googleLocation ? (
+                          <a
+                            href={event.googleLocation}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 underline"
+                          >
+                            Map
+                          </a>
+                        ) : (
+                          "-"
+                        )}
+                      </td>
+                      <td className="p-2 border-b">{event.startDate}</td>
+                      <td className="p-2 border-b">{event.endDate}</td>
+                      <td className="p-2 border-b">{event.inaugurationDate}</td>
+                      <td className="p-2 border-b">{event.participants}</td>
+                      <td className="p-2 border-b">{event.totalCost}</td>
+                      <td className="p-2 border-b">{event.status}</td>
+                      <td className="p-2 border-b">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="mr-2"
+                          onClick={() => handleEdit(idx)}
+                        >
+                          Edit
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => setDeleteIdx(idx)}
+                            >
+                              Delete
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Are you sure you want to delete this event?
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel
+                                onClick={() => setDeleteIdx(null)}
+                              >
+                                Cancel
+                              </AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDelete(idx)}
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+            <tfoot>
+              <tr className="bg-blue-100 font-bold">
+                <td className="p-2 border-t text-right" colSpan={10}>
+                  Total Cost
+                </td>
+                <td className="p-2 border-t">
+                  {filteredEvents.reduce((sum, e) => sum + (Number(e.totalCost) || 0), 0)}
+                </td>
+                <td className="p-2 border-t" colSpan={2}></td>
+              </tr>
+            </tfoot>
           </table>
         </div>
         </div>

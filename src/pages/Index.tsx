@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { CalendarHeader } from '@/components/CalendarHeader';
 import MomNotesList from "./MomNotesList";
+import DailySteps from "./DailySteps";
+import Joke from "./Joke";
 import { DailyEvent } from '@/types/daily';
 import { Button } from '@/components/ui/button';
 import { Plus, Database, Trash2 } from 'lucide-react';
@@ -18,13 +20,15 @@ const Index = () => {
   const { toast } = useToast();
 
   const navigate = useNavigate();
-  const [showMomNotesList, setShowMomNotesList] = useState(false);
-  const [showAbout, setShowAbout] = useState(false);
+  // Use a single state for active view: "menu", "joke", "todos", "steps", "about"
+  const [activeView, setActiveView] = useState<"menu" | "joke" | "todos" | "steps" | "about">("menu");
 
   // Handler for "Track Minutes of Meeting"
-  const handleTrackMom = () => {
-    setShowMomNotesList(true);
-  };
+  // Handler functions for navigation
+  const handleTrackMom = () => setActiveView("todos");
+  const handleTrackSteps = () => setActiveView("steps");
+  const handleShowJoke = () => setActiveView("joke");
+  const handleShowDashboard = () => setActiveView("menu");
 
   // Load events from localStorage on component mount
   useEffect(() => {
@@ -235,11 +239,24 @@ const Index = () => {
 
         {/* Menu Section */}
         {/* Main Content: Show menu or todo list */}
-        {showMomNotesList ? (
+        {activeView === "joke" && (
           <div className="px-8 py-8">
             <div className="flex justify-end mb-4">
               <Button
-                onClick={() => setShowMomNotesList(false)}
+                onClick={handleShowDashboard}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Back to Dashboard
+              </Button>
+            </div>
+            <Joke />
+          </div>
+        )}
+        {activeView === "todos" && (
+          <div className="px-8 py-8">
+            <div className="flex justify-end mb-4">
+              <Button
+                onClick={handleShowDashboard}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 Back to Dashboard
@@ -247,7 +264,21 @@ const Index = () => {
             </div>
             <MomNotesList />
           </div>
-        ) : (
+        )}
+        {activeView === "steps" && (
+          <div className="px-8 py-8">
+            <div className="flex justify-end mb-4">
+              <Button
+                onClick={handleShowDashboard}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Back to Dashboard
+              </Button>
+            </div>
+            <DailySteps />
+          </div>
+        )}
+        {activeView === "menu" && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 px-8 py-8">
             <button
               onClick={handleTrackMom}
@@ -262,6 +293,20 @@ const Index = () => {
               <span className="font-semibold text-lg text-green-900">Track Minutes of Meeting</span>
               <span className="text-sm text-green-700 mt-1">View and manage your todo/action items</span>
             </button>
+            <button
+              onClick={handleTrackSteps}
+              className="flex flex-col items-center justify-center bg-gradient-to-br from-blue-200 to-cyan-100 rounded-xl shadow hover:scale-105 transition p-6 border-2 border-blue-300 focus:outline-none"
+            >
+              <span className="mb-2">
+                <svg className="w-8 h-8 text-cyan-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M4 17v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              </span>
+              <span className="font-semibold text-lg text-cyan-900">Track My Daily Steps</span>
+              <span className="text-sm text-cyan-700 mt-1">Log and view your daily step count</span>
+            </button>
+            {/* Stock Market menu removed */}
             <button
               onClick={() => navigate("/profile")}
               className="flex flex-col items-center justify-center bg-gradient-to-br from-blue-200 to-blue-100 rounded-xl shadow hover:scale-105 transition p-6 border-2 border-blue-300 focus:outline-none"
@@ -317,7 +362,7 @@ const Index = () => {
               <span className="text-sm text-pink-700 mt-1">Set personal reminders</span>
             </button>
               <button
-                onClick={() => setShowAbout(true)}
+                onClick={() => setActiveView("about")}
                 className="flex flex-col items-center justify-center bg-gradient-to-br from-gray-200 to-gray-100 rounded-xl shadow hover:scale-105 transition p-6 border-2 border-gray-300 focus:outline-none"
               >
                 <span className="mb-2">
@@ -492,7 +537,7 @@ const Index = () => {
         {/* EventForm modal removed */}
 
         {/* About App Dialog */}
-        {showAbout && (
+        {activeView === "about" && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
             <div className="relative w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
               {/* Gradient background */}
@@ -504,7 +549,7 @@ const Index = () => {
                   <h3 className="text-2xl font-bold text-white drop-shadow">About This App</h3>
                   <button
                     className="text-white text-2xl font-bold hover:text-cyan-200 transition"
-                    onClick={() => setShowAbout(false)}
+                    onClick={() => setActiveView("menu")}
                     aria-label="Close"
                   >
                     ×

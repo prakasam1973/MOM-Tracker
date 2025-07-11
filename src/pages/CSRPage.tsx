@@ -12,6 +12,15 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 import { useNavigate } from "react-router-dom";
+import { DayPicker } from "react-day-picker";
+import "react-day-picker/dist/style.css";
+
+function formatDateInput(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 
 const FINANCIAL_YEARS = ["21-22", "22-23", "23-24", "24-25", "25-26"];
 const NGO_NAMES = ["IndiaSudar", "OSSAT", "Diyaghar", "Sapno ke"];
@@ -54,6 +63,9 @@ const CSRPage: React.FC = () => {
     googleLocation: "",
     status: STATUSES[0],
   });
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+  const [showInaugDatePicker, setShowInaugDatePicker] = useState(false);
   const [events, setEvents] = useState<CSREvent[]>(() => {
     try {
       const saved = localStorage.getItem("csrEvents");
@@ -178,24 +190,25 @@ const CSRPage: React.FC = () => {
   const maxDate = new Date().toISOString().slice(0, 10);
 
   return (
-    <div className="flex flex-col items-center min-h-[80vh] py-10 bg-gradient-to-br from-blue-600 via-cyan-400 to-indigo-400">
-      <div className="w-full max-w-full bg-white/90 rounded-2xl shadow-2xl p-0 border border-border overflow-hidden">
+    <div className="flex flex-col items-center min-h-screen pt-16 bg-gray-100 font-[Segoe UI]">
+      <div className="w-full max-w-7xl bg-white rounded-2xl shadow-xl p-0 border border-gray-200 flex-1 flex flex-col overflow-auto">
         {/* Header bar */}
-        <div className="flex items-center px-10 py-6 bg-gradient-to-r from-blue-700 to-cyan-500">
+        <div className="flex items-center justify-between px-10 py-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-blue-50">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 tracking-tight mb-1">CSR Events</h2>
+            <p className="text-sm text-gray-500">Corporate Social Responsibility - Event Management</p>
+          </div>
           <Button
             variant="outline"
-            className="mr-4"
+            className="ml-4"
             onClick={() => navigate("/")}
           >
             Back
           </Button>
-          <h2 className="text-3xl font-extrabold flex-1 text-center text-white drop-shadow tracking-tight">
-            CSR Events
-          </h2>
         </div>
-        <div className="p-10">
+        <div className="p-8">
         <form
-          className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8"
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 mb-8"
           onSubmit={handleAdd}
         >
           <div>
@@ -206,7 +219,7 @@ const CSRPage: React.FC = () => {
               name="financialYear"
               value={form.financialYear}
               onChange={handleChange}
-              className="w-full border border-blue-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-300 transition"
+              className="w-full border border-blue-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-300 transition font-segoe"
               required
             >
               {FINANCIAL_YEARS.map((fy) => (
@@ -224,7 +237,7 @@ const CSRPage: React.FC = () => {
               name="ngoName"
               value={form.ngoName}
               onChange={handleChange}
-              className="w-full border border-blue-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-300 transition"
+              className="w-full border border-blue-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-300 transition font-segoe"
               required
             >
               {NGO_NAMES.map((ngo) => (
@@ -242,7 +255,7 @@ const CSRPage: React.FC = () => {
               name="phase"
               value={form.phase}
               onChange={handleChange}
-              className="w-full border border-blue-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-300 transition"
+              className="w-full border border-blue-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-300 transition font-segoe"
               required
             >
               {PHASES.map((p) => (
@@ -260,7 +273,7 @@ const CSRPage: React.FC = () => {
               name="project"
               value={form.project}
               onChange={handleChange}
-              className="w-full border border-blue-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-300 transition"
+              className="w-full border border-blue-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-300 transition font-segoe"
               required
             >
               {PROJECTS.map((p) => (
@@ -278,7 +291,7 @@ const CSRPage: React.FC = () => {
               name="location"
               value={form.location}
               onChange={handleChange}
-              className="w-full border border-blue-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-300 transition"
+              className="w-full border border-blue-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-300 transition font-segoe"
               required
             />
           </div>
@@ -292,50 +305,134 @@ const CSRPage: React.FC = () => {
               onChange={handleChange}
               type="text"
               placeholder="https://maps.google.com/..."
-              className="w-full border border-blue-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-300 transition"
+              className="w-full border border-blue-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-300 transition font-segoe"
             />
           </div>
           <div>
             <label className="block font-semibold mb-1 text-blue-900">
               Start Date
             </label>
-            <input
-              type="date"
-              name="startDate"
-              value={form.startDate}
-              onChange={handleChange}
-              className="w-full border border-blue-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-300 transition"
-              required
-              max={maxDate}
-            />
+            <div className="relative">
+              <input
+                type="text"
+                name="startDate"
+                value={form.startDate}
+                readOnly
+                onClick={() => setShowStartDatePicker((v) => !v)}
+                className="w-full border border-blue-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-300 transition font-segoe cursor-pointer bg-white"
+                required
+                placeholder="Select date"
+              />
+              <button
+                type="button"
+                className="absolute right-2 top-2 bg-blue-100 text-blue-700 rounded p-1"
+                onClick={() => setShowStartDatePicker((v) => !v)}
+                tabIndex={-1}
+                aria-label="Pick date"
+              >
+                📅
+              </button>
+              {showStartDatePicker && (
+                <div className="absolute z-50 top-full left-0 mt-2 bg-white border rounded shadow-lg" style={{minWidth: "260px"}}>
+                  <DayPicker
+                    mode="single"
+                    selected={form.startDate ? new Date(form.startDate) : undefined}
+                    onDayClick={(date) => {
+                      setForm((prev) => ({
+                        ...prev,
+                        startDate: formatDateInput(date),
+                      }));
+                      setShowStartDatePicker(false);
+                    }}
+                  />
+                  <div className="text-xs text-gray-500 px-2 pb-2">Pick a date</div>
+                </div>
+              )}
+            </div>
           </div>
           <div>
             <label className="block font-semibold mb-1 text-blue-900">
               End Date
             </label>
-            <input
-              type="date"
-              name="endDate"
-              value={form.endDate}
-              onChange={handleChange}
-              className="w-full border border-blue-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-300 transition"
-              required
-              max={maxDate}
-            />
+            <div className="relative">
+              <input
+                type="text"
+                name="endDate"
+                value={form.endDate}
+                readOnly
+                onClick={() => setShowEndDatePicker((v) => !v)}
+                className="w-full border border-blue-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-300 transition font-segoe cursor-pointer bg-white"
+                required
+                placeholder="Select date"
+              />
+              <button
+                type="button"
+                className="absolute right-2 top-2 bg-blue-100 text-blue-700 rounded p-1"
+                onClick={() => setShowEndDatePicker((v) => !v)}
+                tabIndex={-1}
+                aria-label="Pick date"
+              >
+                📅
+              </button>
+              {showEndDatePicker && (
+                <div className="absolute z-50 top-full left-0 mt-2 bg-white border rounded shadow-lg" style={{minWidth: "260px"}}>
+                  <DayPicker
+                    mode="single"
+                    selected={form.endDate ? new Date(form.endDate) : undefined}
+                    onDayClick={(date) => {
+                      setForm((prev) => ({
+                        ...prev,
+                        endDate: formatDateInput(date),
+                      }));
+                      setShowEndDatePicker(false);
+                    }}
+                  />
+                  <div className="text-xs text-gray-500 px-2 pb-2">Pick a date</div>
+                </div>
+              )}
+            </div>
           </div>
           <div>
             <label className="block font-semibold mb-1 text-blue-900">
               Inauguration Date
             </label>
-            <input
-              type="date"
-              name="inaugurationDate"
-              value={form.inaugurationDate}
-              onChange={handleChange}
-              className="w-full border border-blue-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-300 transition"
-              required
-              max={maxDate}
-            />
+            <div className="relative">
+              <input
+                type="text"
+                name="inaugurationDate"
+                value={form.inaugurationDate}
+                readOnly
+                onClick={() => setShowInaugDatePicker((v) => !v)}
+                className="w-full border border-blue-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-300 transition font-segoe cursor-pointer bg-white"
+                required
+                placeholder="Select date"
+              />
+              <button
+                type="button"
+                className="absolute right-2 top-2 bg-blue-100 text-blue-700 rounded p-1"
+                onClick={() => setShowInaugDatePicker((v) => !v)}
+                tabIndex={-1}
+                aria-label="Pick date"
+              >
+                📅
+              </button>
+              {showInaugDatePicker && (
+                <div className="absolute z-50 top-full left-0 mt-2 bg-white border rounded shadow-lg" style={{minWidth: "260px"}}>
+                  <DayPicker
+                    mode="single"
+                    selected={form.inaugurationDate ? new Date(form.inaugurationDate) : undefined}
+                    onDayClick={(date) => {
+                      setForm((prev) => ({
+                        ...prev,
+                        inaugurationDate: formatDateInput(date),
+                      }));
+                      setShowInaugDatePicker(false);
+                    }}
+                  />
+                  <div className="text-xs text-gray-500 px-2 pb-2">Pick a date</div>
+                </div>
+              )}
+            </div>
           </div>
           <div>
             <label className="block font-semibold mb-1 text-blue-900">
@@ -347,7 +444,7 @@ const CSRPage: React.FC = () => {
               value={form.participants}
               min={0}
               onChange={handleChange}
-              className="w-full border border-blue-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-300 transition"
+              className="w-full border border-blue-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-300 transition font-segoe"
               required
             />
           </div>
@@ -362,7 +459,7 @@ const CSRPage: React.FC = () => {
               min={0}
               step="0.01"
               onChange={handleChange}
-              className="w-full border border-blue-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-300 transition"
+              className="w-full border border-blue-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-300 transition font-segoe"
               required
             />
           </div>
@@ -374,7 +471,7 @@ const CSRPage: React.FC = () => {
               name="status"
               value={form.status}
               onChange={handleChange}
-              className="w-full border border-blue-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-300 transition"
+              className="w-full border border-blue-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-300 transition font-segoe"
               required
             >
               {STATUSES.map((s) => (
@@ -384,10 +481,10 @@ const CSRPage: React.FC = () => {
               ))}
             </select>
           </div>
-          <div className="flex items-end">
+          <div className="flex items-end col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-6">
             <Button
               type="submit"
-              className="bg-gradient-to-r from-blue-600 to-cyan-400 text-white shadow-md hover:scale-105 transition w-full"
+              className="bg-gradient-to-r from-blue-600 to-cyan-400 text-white shadow-md hover:scale-105 transition w-full font-segoe"
             >
               Add Event
             </Button>
@@ -426,7 +523,7 @@ const CSRPage: React.FC = () => {
           </div>
         </div>
         <h3 className="text-xl font-bold mb-4 text-blue-900">Event Records</h3>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto overflow-y-scroll max-h-[60vh]">
           <table className="w-full border-separate border-spacing-0 rounded-xl overflow-hidden shadow">
             <thead>
               <tr className="bg-gradient-to-r from-blue-100 to-cyan-100">

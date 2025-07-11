@@ -10,6 +10,10 @@ import Profile from "./pages/Profile";
 import AboutMe from "./pages/AboutMe";
 import CSRPage from "./pages/CSRPage";
 import AttendancePage from "./pages/AttendancePage";
+import AIAgent from "./pages/AIAgent";
+import Dashboard from "./pages/Dashboard";
+import Notepad from "./pages/Notepad";
+import ExcelUploadPage from "./pages/ExcelUploadPage";
 
 const queryClient = new QueryClient();
 import { Link } from "react-router-dom";
@@ -21,8 +25,7 @@ const AppHeader = () => (
       <div />
       <nav className="flex gap-4">
         <Link to="/" className="hover:text-blue-600 font-medium transition">Home</Link>
-        <Link to="/mom" className="hover:text-blue-600 font-medium transition">Minutes of Meeting</Link>
-        <Link to="/profile" className="hover:text-blue-600 font-medium transition">My Profile</Link>
+        <Link to="/dashboard" className="hover:text-blue-600 font-medium transition">Dashboard</Link>
         <Link to="/about" className="hover:text-blue-600 font-medium transition">About Me</Link>
       </nav>
     </div>
@@ -44,6 +47,11 @@ const App = () => (
             <Route path="/about" element={<AboutMe />} />
             <Route path="/csr-events" element={<CSRPage />} />
             <Route path="/attendance" element={<AttendancePage />} />
+            <Route path="/ai-agent" element={null} />
+            <Route path="/dashboard" element={<Dashboard />}>
+              <Route path="notepad" element={<Notepad />} />
+              <Route path="excel-upload" element={<ExcelUploadPage />} />
+            </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

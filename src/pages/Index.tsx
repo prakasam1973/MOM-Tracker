@@ -1,4 +1,5 @@
 
+import pkg from '../../../package.json';
 import React, { useState, useEffect } from 'react';
 import { CalendarHeader } from '@/components/CalendarHeader';
 import MomNotesList from "./MomNotesList";
@@ -11,6 +12,10 @@ import { useToast } from '@/hooks/use-toast';
 import { saveEvents, loadEvents, clearEvents } from '@/utils/storage';
 import { clearMomNotes } from '@/utils/momNotesDb';
 import { useNavigate } from "react-router-dom";
+import { DayPicker } from "react-day-picker";
+import "react-day-picker/dist/style.css";
+
+import NotepadModal from "@/components/NotepadModal";
 
 const Index = () => {
   const [events, setEvents] = useState<DailyEvent[]>([]);
@@ -21,7 +26,7 @@ const Index = () => {
 
   const navigate = useNavigate();
   // Use a single state for active view: "menu", "joke", "todos", "steps", "about"
-  const [activeView, setActiveView] = useState<"menu" | "joke" | "todos" | "steps" | "about" | "goals" | "ai" | "inspiration">("menu");
+  const [activeView, setActiveView] = useState<"menu" | "joke" | "todos" | "steps" | "about" | "goals" | "inspiration" | "notepad">("menu");
 
   // Handler for "Track Minutes of Meeting"
   // Handler functions for navigation
@@ -161,6 +166,13 @@ const Index = () => {
   const [reminderDateTime, setReminderDateTime] = useState("");
   const [reminderError, setReminderError] = useState<string | null>(null);
 
+  // Helper to get default reminder date-time string with 10:00 as default time
+  function getDefaultReminderDateTime() {
+    const now = new Date();
+    const pad = (n: number) => n.toString().padStart(2, "0");
+    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T10:00`;
+  }
+
   // Helper to get current datetime-local string
   function getCurrentDateTimeLocal() {
     const now = new Date();
@@ -201,40 +213,26 @@ const Index = () => {
   // Set default date and time when Reminders modal opens
   React.useEffect(() => {
     if (showReminders) {
-      setReminderDateTime(getCurrentDateTimeLocal());
+      setReminderDateTime(getDefaultReminderDateTime());
     }
   }, [showReminders]);
 
+  const [showChangelog, setShowChangelog] = useState(false);
+
   return (
-    <div className="flex flex-col items-center min-h-[80vh] py-10">
-      <div className="w-full max-w-5xl bg-gradient-to-br from-blue-50 via-cyan-50 to-indigo-100 rounded-2xl shadow-xl p-0 border border-border">
+    <div className="flex flex-col items-center min-h-screen pt-16 bg-gray-100 font-[Segoe UI]">
+      <div className="w-full max-w-5xl bg-white rounded-2xl shadow-xl p-0 border border-gray-200 flex-1 flex flex-col overflow-auto">
         {/* Hero Section */}
-        <div className="w-full bg-gradient-to-r from-blue-600 to-cyan-400 rounded-t-2xl px-8 py-10 flex flex-col items-center text-center relative overflow-hidden">
+        <div className="w-full flex flex-col items-center text-center px-8 py-8 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-blue-50">
           <div className="flex items-center justify-center mb-4">
-            <span className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white shadow-lg">
-              <span className="text-3xl font-bold text-blue-600 select-none">PS</span>
+            <span className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 shadow">
+              <span className="text-3xl font-bold text-blue-700 select-none">PS</span>
             </span>
           </div>
-          {/* Marquee effect for the new heading */}
-          <div className="w-full overflow-hidden h-14 flex items-center mb-2 relative">
-            <div className="marquee whitespace-nowrap text-3xl sm:text-4xl font-extrabold text-white drop-shadow-lg">
-              Prakasam's Personal Assistant. Trust me he didn't write single line of code to build me!
-            </div>
+          <div className="mb-2">
+            <span className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">Prakasam's Personal Assistant</span>
           </div>
-          <style>
-            {`
-              .marquee {
-                display: inline-block;
-                white-space: nowrap;
-                animation: marquee 18s linear infinite;
-              }
-              @keyframes marquee {
-                0%   { transform: translateX(100%); }
-                100% { transform: translateX(-100%); }
-              }
-            `}
-          </style>
-          <p className="text-lg text-blue-100 max-w-2xl mx-auto mb-4">Your all-in-one dashboard for managing travel, meetings, todos, and more. Stay organized and productive with a beautiful, easy-to-use interface.</p>
+          <p className="text-base text-gray-600 max-w-2xl mx-auto mb-2">Your all-in-one dashboard Prakasam. Enjoy!</p>
         </div>
 
         {/* Menu Section */}
@@ -253,29 +251,38 @@ const Index = () => {
           </div>
         )}
         {activeView === "todos" && (
-          <div className="px-8 py-8">
-            <div className="flex justify-end mb-4">
-              <Button
-                onClick={handleShowDashboard}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                Back to Dashboard
-              </Button>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 p-4">
+            <div className="relative w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden bg-white">
+              <div className="flex justify-end p-4">
+                <Button
+                  onClick={handleShowDashboard}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Close
+                </Button>
+              </div>
+              <div className="p-4">
+                <MomNotesList />
+              </div>
             </div>
-            <MomNotesList />
           </div>
         )}
         {activeView === "steps" && (
-          <div className="px-8 py-8">
-            <div className="flex justify-end mb-4">
-              <Button
-                onClick={handleShowDashboard}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                Back to Dashboard
-              </Button>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 p-4">
+            <div className="relative w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden bg-white">
+              {/* Cross (×) button removed */}
+              <div className="flex justify-end p-4">
+                <Button
+                  onClick={handleShowDashboard}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Close
+                </Button>
+              </div>
+              <div className="p-4">
+                <DailySteps />
+              </div>
             </div>
-            <DailySteps />
           </div>
         )}
         {activeView === "menu" && (
@@ -307,19 +314,6 @@ const Index = () => {
               <span className="text-sm text-cyan-700 mt-1">Log and view your daily step count</span>
             </button>
             {/* Stock Market menu removed */}
-            <button
-              onClick={() => navigate("/profile")}
-              className="flex flex-col items-center justify-center bg-gradient-to-br from-blue-200 to-blue-100 rounded-xl shadow hover:scale-105 transition p-6 border-2 border-blue-300 focus:outline-none"
-            >
-              <span className="mb-2">
-                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                  <circle cx="12" cy="7" r="4" />
-                  <path d="M5.5 21a8.38 8.38 0 0 1 13 0" />
-                </svg>
-              </span>
-              <span className="font-semibold text-lg text-blue-900">My Profile</span>
-              <span className="text-sm text-blue-700 mt-1">View and edit your profile</span>
-            </button>
             {/* Clear All Data button removed */}
             {/* Local Storage and Quick Stats buttons removed */}
             <button
@@ -375,17 +369,17 @@ const Index = () => {
                 <span className="text-sm text-green-700 mt-1">Track daily, weekly, and monthly goals</span>
               </button>
               <button
-                onClick={() => setActiveView("ai")}
-                className="flex flex-col items-center justify-center bg-gradient-to-br from-yellow-200 to-yellow-100 rounded-xl shadow hover:scale-105 transition p-6 border-2 border-yellow-300 focus:outline-none"
+                onClick={() => setActiveView("notepad")}
+                className="flex flex-col items-center justify-center bg-gradient-to-br from-blue-200 to-blue-100 rounded-xl shadow hover:scale-105 transition p-6 border-2 border-blue-300 focus:outline-none"
               >
                 <span className="mb-2">
-                  <svg className="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M9 9h6v6H9z" />
+                  <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <rect x="4" y="4" width="16" height="16" rx="2" />
+                    <path d="M8 8h8M8 12h8M8 16h4" />
                   </svg>
                 </span>
-                <span className="font-semibold text-lg text-yellow-900">AI Assistant</span>
-                <span className="text-sm text-yellow-700 mt-1">Planner, ideas, drafting, voice notes</span>
+                <span className="font-semibold text-lg text-blue-900">Notepad</span>
+                <span className="text-sm text-blue-700 mt-1">Create, edit, and delete notes</span>
               </button>
               <button
                 onClick={() => setActiveView("inspiration")}
@@ -415,45 +409,44 @@ const Index = () => {
           </div>
         )}
         {activeView === "goals" && (
-          <div className="px-8 py-8">
-            <div className="flex justify-end mb-4">
-              <Button
-                onClick={handleShowDashboard}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                Back to Dashboard
-              </Button>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 p-4">
+            <div className="relative w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden bg-white">
+              <div className="flex justify-end p-4">
+                <Button
+                  onClick={handleShowDashboard}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Close
+                </Button>
+              </div>
+              <div className="p-4">
+                <GoalTrackerSection />
+              </div>
             </div>
-            <GoalTrackerSection />
-          </div>
-        )}
-        {activeView === "ai" && (
-          <div className="px-8 py-8">
-            <div className="flex justify-end mb-4">
-              <Button
-                onClick={handleShowDashboard}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                Back to Dashboard
-              </Button>
-            </div>
-            <AIAssistantSection />
           </div>
         )}
         {activeView === "inspiration" && (
-          <div className="px-8 py-8">
-            <div className="flex justify-end mb-4">
-              <Button
-                onClick={handleShowDashboard}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                Back to Dashboard
-              </Button>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 p-4">
+            <div className="relative w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden bg-white">
+              <div className="flex justify-end p-4">
+                <Button
+                  onClick={handleShowDashboard}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Close
+                </Button>
+              </div>
+              <div className="p-4">
+                <InspirationSection />
+              </div>
             </div>
-            <InspirationSection />
           </div>
         )}
 
+        {/* Notepad Modal */}
+        {activeView === "notepad" && (
+          <NotepadModal onClose={() => setActiveView("menu")} />
+        )}
         {/* Duplicate MomNotesList rendering removed */}
 
         {/* Local Storage and Quick Stats dialogs removed */}
@@ -511,15 +504,47 @@ const Index = () => {
                   </div>
                   <div>
                     <label htmlFor="reminder-date" className="block text-sm font-medium text-purple-800 mb-1">
-                      Date
+                      Date & Time
                     </label>
-                    <input
-                      id="reminder-date"
-                      type="datetime-local"
-                      className="w-full border rounded px-3 py-2 bg-pink-50/50"
-                      value={reminderDateTime}
-                      onChange={e => setReminderDateTime(e.target.value)}
-                    />
+                    <div className="flex gap-2 items-center">
+                      <div>
+                        <DayPicker
+                          mode="single"
+                          selected={reminderDateTime ? new Date(reminderDateTime.split("T")[0]) : undefined}
+                          onDayClick={date => {
+                            if (!date) return;
+                            const d = date;
+                            const year = d.getFullYear();
+                            const month = String(d.getMonth() + 1).padStart(2, "0");
+                            const day = String(d.getDate()).padStart(2, "0");
+                            let time = "09:00";
+                            if (reminderDateTime && reminderDateTime.includes("T")) {
+                              time = reminderDateTime.split("T")[1];
+                            }
+                            setReminderDateTime(`${year}-${month}-${day}T${time}`);
+                          }}
+                          disabled={date => date < new Date(new Date().setHours(0,0,0,0))}
+                        />
+                      </div>
+                      <select
+                        className="border rounded px-2 py-2 bg-pink-50/50"
+                        value={reminderDateTime && reminderDateTime.includes("T") ? reminderDateTime.split("T")[1] : "10:00"}
+                        onChange={e => {
+                          let date = reminderDateTime && reminderDateTime.includes("T")
+                            ? reminderDateTime.split("T")[0]
+                            : new Date().toISOString().slice(0, 10);
+                          setReminderDateTime(`${date}T${e.target.value}`);
+                        }}
+                      >
+                        {Array.from({ length: 24 * 4 }, (_, i) => {
+                          const h = String(Math.floor(i / 4)).padStart(2, "0");
+                          const m = String((i % 4) * 15).padStart(2, "0");
+                          return (
+                            <option key={h + m} value={`${h}:${m}`}>{`${h}:${m}`}</option>
+                          );
+                        })}
+                      </select>
+                    </div>
                   </div>
                   {reminderError && (
                     <div className="text-xs text-red-500">{reminderError}</div>
@@ -529,33 +554,10 @@ const Index = () => {
                   </Button>
                 </form>
                 <div>
-                  {reminders.length === 0 ? (
-                    <div className="text-gray-500 text-sm">No reminders set.</div>
-                  ) : (
-                    <ul className="space-y-2">
-                      {reminders.map(r => (
-                        <li key={r.id} className="flex items-center justify-between border-b pb-1">
-                          <div>
-                            <div className="font-medium">{r.title}</div>
-                            <div className="text-xs text-gray-500">
-                              {r.date} {r.time}
-                            </div>
-                          </div>
-                          <Button
-                            variant="outline"
-                            className="text-red-600 px-2 py-1"
-                            onClick={() => {
-                              const updated = reminders.filter(rem => rem.id !== r.id);
-                              setReminders(updated);
-                              localStorage.setItem("reminders", JSON.stringify(updated));
-                            }}
-                          >
-                            Delete
-                          </Button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                  <RemindersList
+                    reminders={reminders}
+                    setReminders={setReminders}
+                  />
                 </div>
               </div>
             </div>
@@ -614,49 +616,7 @@ const Index = () => {
         {/* EventForm modal removed */}
 
         {/* About App Dialog */}
-        {activeView === "about" && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
-            <div className="relative w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
-              {/* Gradient background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-cyan-400 to-indigo-400 opacity-90"></div>
-              {/* Content card */}
-              <div className="relative z-10 p-0">
-                {/* Header bar */}
-                <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-blue-700 to-cyan-500">
-                  <h3 className="text-2xl font-bold text-white drop-shadow">About This App</h3>
-                  <button
-                    className="text-white text-2xl font-bold hover:text-cyan-200 transition"
-                    onClick={() => setActiveView("menu")}
-                    aria-label="Close"
-                  >
-                    ×
-                  </button>
-                </div>
-                <div className="px-6 py-6 bg-white/90 rounded-b-2xl">
-                  <div className="mb-4">
-                    <span className="font-semibold text-gray-700">Version:</span>
-                    <span className="ml-2 text-blue-700 font-mono">1.0.0</span>
-                  </div>
-                  <div>
-                    <span className="font-semibold text-gray-700">Tech Stack:</span>
-                    <ul className="list-disc list-inside text-gray-700 mt-2 space-y-1 text-sm">
-                      <li>React (TypeScript)</li>
-                      <li>Vite</li>
-                      <li>Tailwind CSS</li>
-                      <li>shadcn/ui & Radix UI</li>
-                      <li>Dexie (IndexedDB)</li>
-                      <li>React Hook Form & Zod</li>
-                      <li>date-fns, react-day-picker</li>
-                      <li>Lucide Icons</li>
-                      <li>Recharts</li>
-                      <li>PostCSS, ESLint, Prettier</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {activeView === "about" && <AboutAppSection onClose={() => setActiveView("menu")} />}
       </div>
     </div>
   );
@@ -1016,171 +976,222 @@ const GoalTrackerSection: React.FC = () => {
   );
 };
 
-export default Index;
+/**
+ * RemindersList: paginated, editable reminder names
+ */
+const RemindersList: React.FC<{
+  reminders: { id: string; title: string; date: string; time: string }[];
+  setReminders: React.Dispatch<React.SetStateAction<{ id: string; title: string; date: string; time: string }[]>>;
+}> = ({ reminders, setReminders }) => {
+  const [editId, setEditId] = React.useState<string | null>(null);
+  const [editValue, setEditValue] = React.useState<string>("");
+  const [page, setPage] = React.useState(0);
 
-// --- AI Assistant Section ---
-const AIAssistantSection: React.FC = () => {
-  const [planner, setPlanner] = React.useState("");
-  const [ideaPrompt, setIdeaPrompt] = React.useState("");
-  const [ideaResult, setIdeaResult] = React.useState("");
-  const [draftType, setDraftType] = React.useState("email");
-  const [draftPrompt, setDraftPrompt] = React.useState("");
-  const [draftResult, setDraftResult] = React.useState("");
-  const [voiceText, setVoiceText] = React.useState("");
-  const [isRecording, setIsRecording] = React.useState(false);
-
-  // Placeholder for AI features
-  const handleGenerateIdea = () => {
-    const ideas = [
-      "Start a daily gratitude journal.",
-      "Build a personal website to showcase your projects.",
-      "Organize a community clean-up event.",
-      "Create a mobile app for habit tracking.",
-      "Write a blog post about your favorite hobby.",
-      "Design a new productivity tool.",
-      "Launch a podcast on a topic you love.",
-      "Develop a recipe book for quick healthy meals.",
-      "Start a YouTube channel for tutorials.",
-      "Invent a board game for family nights.",
-      "Plan a themed virtual meetup.",
-      "Create a digital art portfolio.",
-      "Write a short story or poem.",
-      "Develop a tool to automate a boring task.",
-      "Start a newsletter for your local community."
-    ];
-    let result = "";
-    if (ideaPrompt.trim()) {
-      // Use the prompt to generate a more relevant idea (simple keyword match)
-      const lowerPrompt = ideaPrompt.toLowerCase();
-      const matched = ideas.find(idea => idea.toLowerCase().includes(lowerPrompt));
-      if (matched) {
-        result = `Idea for "${ideaPrompt}": ${matched}`;
-      } else {
-        // Fallback: combine prompt with a random idea
-        const randomIdea = ideas[Math.floor(Math.random() * ideas.length)];
-        result = `Idea for "${ideaPrompt}": ${randomIdea}`;
-      }
-    } else {
-      // No prompt: just show a random idea
-      result = "Here's a creative idea: " + ideas[Math.floor(Math.random() * ideas.length)];
-    }
-    setIdeaResult(result);
-  };
-
-  const handleDraft = () => {
-    setDraftResult(
-      `Drafted ${draftType}: ${draftPrompt ? draftPrompt : "(no input)"}`
-    );
-  };
-
-  // Voice-to-text (browser API, fallback to placeholder)
-  const handleStartVoice = () => {
-    if ("webkitSpeechRecognition" in window) {
-      // @ts-ignore
-      const recognition = new window.webkitSpeechRecognition();
-      recognition.lang = "en-US";
-      recognition.onresult = (event: any) => {
-        setVoiceText(event.results[0][0].transcript);
-        setIsRecording(false);
-      };
-      recognition.onerror = () => setIsRecording(false);
-      recognition.onend = () => setIsRecording(false);
-      setIsRecording(true);
-      recognition.start();
-    } else {
-      setIsRecording(true);
-      setTimeout(() => {
-        setVoiceText("Voice-to-text is not supported in this browser.");
-        setIsRecording(false);
-      }, 1500);
-    }
-  };
+  const pageSize = 5;
+  const totalPages = Math.ceil(reminders.length / pageSize);
+  const paginated = reminders.slice(page * pageSize, page * pageSize + pageSize);
 
   return (
-    <div className="flex flex-col items-center min-h-[60vh] py-6 bg-gradient-to-br from-yellow-100 via-blue-50 to-indigo-50 rounded-xl">
-      <div className="w-full max-w-2xl bg-white/90 rounded-2xl shadow-2xl p-6 border border-border overflow-hidden">
-        <h2 className="text-2xl font-extrabold text-center text-yellow-800 mb-6">
-          AI Assistant
-        </h2>
-        <div className="mb-6">
-          <label className="block font-semibold mb-1 text-yellow-900">
-            Daily Planner
-          </label>
-          <textarea
-            className="w-full border border-yellow-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-yellow-300 transition"
-            rows={2}
-            placeholder="What do you want to plan today?"
-            value={planner}
-            onChange={e => setPlanner(e.target.value)}
-          />
-        </div>
-        <div className="mb-6">
-          <label className="block font-semibold mb-1 text-yellow-900">
-            Idea Generator
-          </label>
-          <div className="flex gap-2">
-            <input
-              className="flex-1 border border-yellow-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-yellow-300 transition"
-              placeholder="Enter a topic or prompt"
-              value={ideaPrompt}
-              onChange={e => setIdeaPrompt(e.target.value)}
-            />
-            <Button onClick={handleGenerateIdea} className="bg-yellow-500 text-white">
-              Generate
-            </Button>
-          </div>
-          {ideaResult && (
-            <div className="mt-2 text-yellow-800 bg-yellow-50 rounded p-2">{ideaResult}</div>
-          )}
-        </div>
-        <div className="mb-6">
-          <label className="block font-semibold mb-1 text-yellow-900">
-            Drafting (Email, Blog, Code, etc.)
-          </label>
-          <div className="flex gap-2 mb-2">
-            <select
-              value={draftType}
-              onChange={e => setDraftType(e.target.value)}
-              className="border border-yellow-200 rounded-lg px-2 py-1"
-            >
-              <option value="email">Email</option>
-              <option value="blog">Blog</option>
-              <option value="code">Code</option>
-              <option value="other">Other</option>
-            </select>
-            <input
-              className="flex-1 border border-yellow-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-yellow-300 transition"
-              placeholder="Describe what to draft"
-              value={draftPrompt}
-              onChange={e => setDraftPrompt(e.target.value)}
-            />
-            <Button onClick={handleDraft} className="bg-yellow-500 text-white">
-              Draft
-            </Button>
-          </div>
-          {draftResult && (
-            <div className="mt-2 text-yellow-800 bg-yellow-50 rounded p-2">{draftResult}</div>
-          )}
-        </div>
-        <div className="mb-6">
-          <label className="block font-semibold mb-1 text-yellow-900">
-            Voice-to-Text for Quick Notes
-          </label>
-          <div className="flex gap-2 items-center">
+    <div>
+      {reminders.length === 0 ? (
+        <div className="text-gray-500 text-sm">No reminders set.</div>
+      ) : (
+        <>
+          <ul className="space-y-2">
+            {paginated.map(r => (
+              <li key={r.id} className="flex items-center justify-between border-b pb-1">
+                <div>
+                  {editId === r.id ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        className="border rounded px-2 py-1 text-sm"
+                        value={editValue}
+                        onChange={e => setEditValue(e.target.value)}
+                        autoFocus
+                      />
+                      <Button
+                        size="sm"
+                        variant="default"
+                        className="px-2"
+                        onClick={() => {
+                          setReminders(prev =>
+                            prev.map(rem =>
+                              rem.id === r.id ? { ...rem, title: editValue } : rem
+                            )
+                          );
+                          setEditId(null);
+                          setEditValue("");
+                        }}
+                      >
+                        Save
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="px-2"
+                        onClick={() => {
+                          setEditId(null);
+                          setEditValue("");
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="font-medium">{r.title}</div>
+                      <div className="text-xs text-gray-500">
+                        {r.date} {r.time}
+                      </div>
+                    </>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="px-2"
+                    onClick={() => {
+                      setEditId(r.id);
+                      setEditValue(r.title);
+                    }}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="text-red-600 px-2 py-1"
+                    onClick={() => {
+                      const updated = reminders.filter(rem => rem.id !== r.id);
+                      setReminders(updated);
+                      localStorage.setItem("reminders", JSON.stringify(updated));
+                    }}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <div className="flex justify-between items-center mt-2">
             <Button
-              onClick={handleStartVoice}
-              className="bg-yellow-500 text-white"
-              disabled={isRecording}
+              size="sm"
+              variant="outline"
+              className="px-2"
+              onClick={() => setPage(p => Math.max(0, p - 1))}
+              disabled={page === 0}
             >
-              {isRecording ? "Listening..." : "Start Recording"}
+              Previous
             </Button>
-            <span className="text-yellow-800">{voiceText}</span>
+            <span className="text-xs text-gray-700">
+              Page {page + 1} of {totalPages}
+            </span>
+            <Button
+              size="sm"
+              variant="outline"
+              className="px-2"
+              onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+              disabled={page >= totalPages - 1}
+            >
+              Next
+            </Button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+/** AboutAppSection: About modal with changelog button and modal */
+const AboutAppSection: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const [showChangelog, setShowChangelog] = React.useState(false);
+  const version = import.meta.env.VITE_APP_VERSION;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+      <div className="relative w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
+        {/* Gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-cyan-400 to-indigo-400 opacity-90"></div>
+        {/* Content card */}
+        <div className="relative z-10 p-0">
+          {/* Header bar */}
+          <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-blue-700 to-cyan-500">
+            <h3 className="text-2xl font-bold text-white drop-shadow">About This App</h3>
+            <button
+              className="text-white text-2xl font-bold hover:text-cyan-200 transition"
+              onClick={onClose}
+              aria-label="Close"
+            >
+              ×
+            </button>
+          </div>
+          <div className="px-6 py-6 bg-white/90 rounded-b-2xl">
+            <div className="mb-4">
+              <span className="font-semibold text-gray-700">Version:</span>
+              <span className="ml-2 text-blue-700 font-mono">{version}</span>
+              <Button
+                className="ml-4 px-3 py-1 bg-blue-100 text-blue-800 border border-blue-200 rounded hover:bg-blue-200"
+                onClick={() => setShowChangelog(true)}
+              >
+                Show Changelog
+              </Button>
+              {showChangelog && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 p-4">
+                  <div className="relative w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden bg-white">
+                    <div className="flex justify-between items-center p-4 border-b">
+                      <h3 className="text-lg font-bold text-blue-900">Changelog</h3>
+                      <Button
+                        onClick={() => setShowChangelog(false)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        Close
+                      </Button>
+                    </div>
+                    <div className="p-4 max-h-[60vh] overflow-y-auto text-sm">
+                      <ul className="list-disc pl-5 space-y-2">
+                        <li>
+                          <span className="font-semibold">v1.2</span>
+                          <span className="text-xs text-gray-500 ml-2">(2025-06-07)</span>:
+                          Goal Tracker, AI Assistant, and Inspiration screens now use modal popups. About screen version is dynamic. Changelog modal added.
+                        </li>
+                        <li>
+                          <span className="font-semibold">v1.1</span>
+                          <span className="text-xs text-gray-500 ml-2">(2025-05-20)</span>:
+                          Added Personal Reminders, improved Attendance and Profile screens, and made UI lighter.
+                        </li>
+                        <li>
+                          <span className="font-semibold">v1.0</span>
+                          <span className="text-xs text-gray-500 ml-2">(2025-05-01)</span>:
+                          Initial release with Dashboard, CSR Events, Attendance, Profile, and basic features.
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div>
+              <span className="font-semibold text-gray-700">Tech Stack:</span>
+              <ul className="list-disc list-inside text-gray-700 mt-2 space-y-1 text-sm">
+                <li>React (TypeScript)</li>
+                <li>Vite</li>
+                <li>Tailwind CSS</li>
+                <li>shadcn/ui & Radix UI</li>
+                <li>Dexie (IndexedDB)</li>
+                <li>React Hook Form & Zod</li>
+                <li>date-fns, react-day-picker</li>
+                <li>Lucide Icons</li>
+                <li>Recharts</li>
+                <li>PostCSS, ESLint, Prettier</li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
 };
+
+export default Index;
 
 // --- Inspiration Section ---
 const InspirationSection: React.FC = () => {

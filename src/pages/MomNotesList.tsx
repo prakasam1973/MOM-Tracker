@@ -31,7 +31,7 @@ const MomNotesList = () => {
   const [addErrors, setAddErrors] = useState<{ date?: string; content?: string; actionItem?: string }>({});
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const notesPerPage = 10;
+  const notesPerPage = 5;
   const navigate = useNavigate();
 
   // For delete confirmation dialog
@@ -153,7 +153,10 @@ const MomNotesList = () => {
   const handlePageClick = (page: number) => setCurrentPage(page);
 
   return (
-    <div className="flex flex-col items-center min-h-[80vh] py-10 bg-gradient-to-br from-blue-100 via-cyan-100 to-pink-100">
+    <div
+      className="flex flex-col items-center min-h-[80vh] py-10 bg-gradient-to-br from-blue-100 via-cyan-100 to-pink-100"
+      style={{ fontFamily: "'Segoe UI', Arial, sans-serif" }}
+    >
       <div className="w-full max-w-5xl bg-white/90 rounded-2xl shadow-2xl p-0 border border-border overflow-hidden">
         {/* Header bar */}
         <div className="flex items-center justify-between px-8 py-6 bg-gradient-to-r from-blue-400 to-pink-300">
@@ -182,8 +185,18 @@ const MomNotesList = () => {
               ))}
             </select>
           </div>
-          <Button className="bg-gradient-to-r from-blue-600 to-cyan-400 text-white shadow-md hover:scale-105 transition" onClick={() => setAdding(a => !a)}>
-            {adding ? "Cancel" : "Add New Note"}
+          <Button
+            className="bg-gradient-to-r from-blue-700 to-cyan-500 text-white shadow-md hover:scale-105 transition flex items-center gap-2 px-5 py-2 rounded-lg font-semibold"
+            onClick={() => setAdding(a => !a)}
+          >
+            {adding ? (
+              "Cancel"
+            ) : (
+              <>
+                <span className="text-xl font-bold">+</span>
+                <span>New Note</span>
+              </>
+            )}
           </Button>
         </div>
         {adding && (
@@ -196,7 +209,10 @@ const MomNotesList = () => {
               >
                 ×
               </button>
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Add New Note</h3>
+              <h3 className="text-xl font-bold text-blue-800 mb-4 flex items-center gap-2">
+                <span className="text-2xl font-bold">+</span>
+                Add Note
+              </h3>
               <div className="mb-4">
                 <label className="block text-gray-700 mb-1" htmlFor="meeting-date">
                   Date
